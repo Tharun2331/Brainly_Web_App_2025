@@ -2,10 +2,11 @@ import { useRef, useState } from "react";
 import { CrossIcon } from "../../icons/CrossIcon"
 import { Button } from "./Button"
 import { Input } from "./Input"
-import {useOutsideClick} from "./useOutsideClick";
+import {useOutsideClick} from "../../hooks/useOutsideClick";
 import { YoutubeIcon } from "../../icons/YoutubeIcon";
 import { BACKEND_URL } from "../../config";
 import axios from "axios";
+
 enum ContentType {
   Youtube = "youtube",
   Twitter = "twitter"

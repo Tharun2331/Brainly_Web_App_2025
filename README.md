@@ -4,22 +4,23 @@ Brainly is a web application that helps users save and organize their important 
 
 ## Features
 
-- *Content Management*
+- **Content Management**
   - Save YouTube videos with titles and links
   - Save tweets with custom titles
   - View saved content in an organized dashboard
-  - 
-- *User Authentication*
+  - Delete unwanted content
+
+- **User Authentication**
   - Secure signup with username and password
   - Protected routes with JWT authentication
   - Password encryption using bcrypt
 
-- *Sharing Capabilities*
+- **Sharing Capabilities**
   - Generate unique share links for your content collection
   - View other users' shared collections
   - Real-time content updates
 
-- *User Interface*
+- **User Interface**
   - Clean and modern dashboard
   - Responsive design
   - Interactive content cards
@@ -51,43 +52,43 @@ Brainly is a web application that helps users save and organize their important 
 ### Installation
 
 1. Clone the repository
-sh
-git clone https://github.com/Tharun2331/Brainly.git
-cd SecondBrain
-
+    ```sh
+    git clone https://github.com/Tharun2331/Brainly.git
+    cd SecondBrain
+    ```
 
 2. Install backend dependencies
-sh
-cd secondBrain
-npm install
-
+    ```sh
+    cd secondBrain
+    npm install
+    ```
 
 3. Install frontend dependencies
-sh
-cd ../secondBrainFrontend
-npm install
+    ```sh
+    cd ../secondBrainFrontend
+    npm install
+    ```
 
-
-4. Create a .env file in the secondBrain directory with the following variables:
-env
-MONGODBURI=your_mongodb_connection_string
-USER_JWT_SECRET=your_jwt_secret
-RANDOM_STRING=your_random_string_for_hash_generation
-
+4. Create a `.env` file in the `secondBrain` directory with the following variables:
+    ```env
+    MONGODBURI=your_mongodb_connection_string
+    USER_JWT_SECRET=your_jwt_secret
+    RANDOM_STRING=your_random_string_for_hash_generation
+    ```
 
 ### Running the Application
 
 1. Start the backend server
-sh
-cd secondBrain
-npm run dev
-
+    ```sh
+    cd secondBrain
+    npm run dev
+    ```
 
 2. Start the frontend development server
-sh
-cd secondBrainFrontend
-npm run dev
-
+    ```sh
+    cd secondBrainFrontend
+    npm run dev
+    ```
 
 The application should now be running on:
 - Frontend: http://localhost:5173
@@ -99,4 +100,6 @@ The application should now be running on:
 2. Login with your credentials
 3. Add content using the "Add Content" button
 4. View your saved content in the dashboard
-5. Share your collection using the "Share Brain" button
+5. Share your collection using the "Share Brain" button
+
+---

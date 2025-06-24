@@ -30,7 +30,7 @@ const userSchema = new Schema({
 })
 
 const tagSchema = new Schema({
-  title: {type:String, required:true, unique:true},
+  tag: {type:String, required:true, unique:true},
 })
 const contentTypes = ['image','video', 'article', 'audio','youtube', 'twitter'];
 

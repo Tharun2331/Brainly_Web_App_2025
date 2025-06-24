@@ -11,7 +11,7 @@ declare global {
 import express, { Request, Response } from "express";
 import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
-import { contentModel, linkModel, userModel } from "./db";
+import { contentModel, linkModel, tagModel, userModel } from "./db";
 import {z} from "zod";
 import dotenv from "dotenv";
 import bcrypt from "bcrypt";
@@ -107,13 +107,13 @@ app.post("/api/v1/signup", async (req: Request, res: Response) => {
   })
 
   app.post("/api/v1/content", userMiddleware, async (req,res)=> {
-      const {link,type,title} = req.body;
+      const {link,type,title,tags=[]} = req.body;
       await contentModel.create({
         link,
         title,
         type,
         userId: req.userId,
-        tags:[]
+        tags
       })
       return res.status(200).json({
         message:"content added"
@@ -124,20 +124,25 @@ app.post("/api/v1/signup", async (req: Request, res: Response) => {
      const userId = req.userId;
      const content = await contentModel.find({
       userId: userId
-     }).populate("userId", "username")
+     }).populate("userId", "username").populate("tags", "tag");
 
      return res.status(200).json({
       content
      })
   })
 
-  app.delete("/api/v1/content",userMiddleware, async (req,res)=> {
-    const contentId = req.body.contentId;
-    await contentModel.deleteMany({
+  app.delete("/api/v1/content/:id",userMiddleware, async (req,res)=> {
+    const contentId = req.params.id;
+    const userId = req.userId;
+    const results = await contentModel.deleteOne({
       _id:contentId,
-
-      userId: req.userId
+      userId: userId
     })
+    if(results.deletedCount === 0) {
+      return res.status(404).json({
+        message:"Content not found or you do not have permission to delete it"
+      })
+    }
     return res.status(200).json({
       message:"content deleted"
     })
@@ -200,11 +205,12 @@ app.post("/api/v1/signup", async (req: Request, res: Response) => {
       // userId
       const content = await contentModel.find({
         userId: link.userId
-      })
+      }).populate("tags","tag")
       
       const user = await userModel.findOne({
         _id: link.userId
       })
+
       console.log(link)
       if(!user) {
         return res.status(411).json({
@@ -215,7 +221,7 @@ app.post("/api/v1/signup", async (req: Request, res: Response) => {
       return res.status(200).json({
         message: "Content fetched Successfully!",
         username: user.username,
-        content: content
+        content: content,
       })
 
     }
@@ -226,6 +232,46 @@ app.post("/api/v1/signup", async (req: Request, res: Response) => {
     });
     }
   })
+
+
+  app.post("/api/v1/tags", userMiddleware, async (req,res)=> {
+    const {tags} = req.body;
+    if(!Array.isArray(tags) || tags.length === 0) {
+      return res.status(400).json({
+        message: "Tags must be a non-empty array"
+      })
+    }
+    try{
+      const tagIds = [];
+      for(const tagText of tags)
+      {
+        let tagDoc = await tagModel.findOne({
+          tag: tagText
+        })
+
+        if(!tagDoc)
+        {
+          tagDoc = await tagModel.create({
+            tag: tagText
+          });
+        }
+        tagIds.push(tagDoc._id);
+      }
+      return res.status(200).json({
+        message: "Tags added successfully",
+        tagIds
+      })
+    }
+    catch(err) {
+      return res.status(500).json({
+        message: "Failed to add tags",
+        error: err instanceof Error ? err.message : "Unknown error",
+      });
+    }
+
+  }
+
+  );
 
   app.listen(port, ()=> {
     console.log(`Running on Port ${port}`)

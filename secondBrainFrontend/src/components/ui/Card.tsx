@@ -1,17 +1,42 @@
+import { DeleteIcon } from "../../icons/DeleteIcon";
 import { ShareIcon } from "../../icons/ShareIcon";
 import { useEffect, useRef, useState } from "react";
+import { YoutubeIcon } from "../../icons/YoutubeIcon";
+import { TwitterIcon } from "../../icons/TwitterIcon";
+import axios from "axios";
+import { BACKEND_URL } from "../../config";
+import { toast } from "react-toastify";
 
+interface Tag {
+  _id:string;
+  tag:string;
+}
 
 interface Cardprops {
   title: string;
   link: string;
   type: "twitter" | "youtube";
+  tags?: Tag[]; // Optional, can be used to display tags
+  contentId: string; // Optional, used for deletion
+  onDelete?: (contentId: string) => void; // Callback for deletion
 }
 
-export const Card = ({ title, link, type }: Cardprops) => {
+export const Card = ({ title, link, type, contentId, onDelete, tags }: Cardprops) => {
   const tweetRef = useRef<HTMLQuoteElement>(null);
   const [tweetLoaded, setTweetLoaded] = useState(false);
   const [embedError, setEmbedError] = useState(false);
+  
+  const handleDelete = () => {
+    if (contentId) {
+      onDelete && onDelete(contentId);
+    } else {
+      console.error("No contentId provided for deletion");
+      toast.error("No content ID provided for deletion", {
+        position: "top-right",
+        autoClose: 3000,
+    } );
+    }
+  };
 
   useEffect(() => {
     const loadTweet = async () => {
@@ -62,7 +87,7 @@ export const Card = ({ title, link, type }: Cardprops) => {
         <div className="flex justify-between ">
           <div className="flex items-center ">
             <div className="text-gray-500 pr-2">
-              <ShareIcon size="md" />
+              { type === "youtube" ? <YoutubeIcon /> : <TwitterIcon /> } 
             </div>
             {title}
           </div>
@@ -72,8 +97,8 @@ export const Card = ({ title, link, type }: Cardprops) => {
                 <ShareIcon size="md" />
               </a>
             </div>
-            <div className="pr-2 text-gray-400">
-              <ShareIcon size="md" />
+            <div className="pr-2 text-gray-400 cursor-pointer" onClick={handleDelete}>
+              <DeleteIcon size="md" />
             </div>
           </div>
         </div>
@@ -102,6 +127,22 @@ export const Card = ({ title, link, type }: Cardprops) => {
               )}
             </blockquote>
           )}
+        </div>
+        {tags && tags.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {tags.map(tagObj =>
+                    tagObj && tagObj.tag ? (
+                      <span
+                        key={tagObj._id}
+                        className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full text-xs"
+                      >
+                        #{tagObj.tag}
+                      </span>
+                    ) : null
+                  )}
+                </div>
+              )}
+        <div>
         </div>
       </div>
     </div>

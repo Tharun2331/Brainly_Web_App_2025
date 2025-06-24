@@ -6,7 +6,7 @@ import {useOutsideClick} from "../../hooks/useOutsideClick";
 import { YoutubeIcon } from "../../icons/YoutubeIcon";
 import { BACKEND_URL } from "../../config";
 import axios from "axios";
-
+// @ts-ignore
 enum ContentType {
   Youtube = "youtube",
   Twitter = "twitter"
@@ -17,16 +17,30 @@ export function CreateContentModal({open, onClose})
   const modref = useOutsideClick(onClose)
   const titleRef = useRef<HTMLInputElement>(null);
   const linkRef = useRef<HTMLInputElement>(null);
+  const tagRef = useRef<HTMLInputElement>(null);
   const [type,setType] = useState(ContentType.Youtube);
   
   const addContent = async () => {
     const title=titleRef.current?.value;
     const link= linkRef.current?.value;
+    const tags = tagRef.current?.value.split(",").map(tag => tag.trim()) || [];
     
-    await axios.post(`${BACKEND_URL}/api/v1/content/`, {
+    const tagRes = await axios.post(`${BACKEND_URL}/api/v1/tags`, {
+      tags
+    },
+
+    {
+      headers: {
+        "Authorization": localStorage.getItem("token")
+      }
+    })
+    const tagIds = tagRes.data.tagIds;
+
+    await axios.post(`${BACKEND_URL}/api/v1/content`, {
       title,
       link,
-      type
+      type,
+      tags: tagIds
     }, 
     {
       headers: {
@@ -35,8 +49,6 @@ export function CreateContentModal({open, onClose})
       
     })
     onClose();
-
-
   }
   return <div>
     {open && <div>
@@ -56,10 +68,11 @@ export function CreateContentModal({open, onClose})
         <div>
             <Input ref={titleRef} placeholder={"Title"}/>
             <Input ref={linkRef} placeholder={"Link"}/>
+            <Input ref={tagRef} placeholder={"Tags"} />
         </div>
         <div className="flex justify-center gap-2 p-4">
-          <Button text="Youtube" variant={type === ContentType.Youtube? "primary": "secondary" } onClick={() => setType(ContentType.Youtube)}></Button>
-          <Button text="Twitter" variant={type === ContentType.Twitter? "primary": "secondary" } onClick={() => setType(ContentType.Twitter)}></Button>
+          <Button text="Youtube" variant={type === ContentType.Youtube? "primary": "secondary" } onClick={() => setType(ContentType.Youtube)} size="md"></Button>
+          <Button text="Twitter" variant={type === ContentType.Twitter? "primary": "secondary" } onClick={() => setType(ContentType.Twitter)} size="md"></Button>
         </div>
         <div className="flex justify-center">
         <Button variant="primary" text="submit" size="sm" onClick={addContent} /> 

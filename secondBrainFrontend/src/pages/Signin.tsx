@@ -48,7 +48,11 @@ return <div className="h-screen w-screen bg-[var(--color-gray-200)] flex justify
     <div className="flex justify-center items-center pt-4">
       <Button  variant="primary" text="Signin" fullWidth= {true} loading={loading} onClick={handleSubmit} />
     </div>
-
+    <div>
+      <p className="text-center text-sm text-gray-500 mt-4">
+        Don't have an account? <span className="text-blue-500 cursor-pointer" onClick={() => navigate("/signup")}>Signup</span>
+      </p>
+    </div>
   </div>
 
 

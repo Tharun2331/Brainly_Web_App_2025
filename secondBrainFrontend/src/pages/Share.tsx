@@ -13,30 +13,30 @@ export const Share = () => {
   const [error, setError] = useState<string | null>(null);
 
   const fetchSharedContent = async () => {
-  setLoading(true);
-  setError(null);
-  try {
-    const response = await axios.get(`${BACKEND_URL}/api/v1/brain/${shareId}`);
-    const { content, username: userName } = response.data;
-    setContents(content || []);
-    setUsername(userName || "Unknown User");
-  } catch (err) {
-    setError("Failed to load shared content. Check the link or try again.");
-    console.error("Error fetching shared content:", err);
-  } finally {
-    setLoading(false);
-  }
-};
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await axios.get(`${BACKEND_URL}/api/v1/brain/${shareId}`);
+      const { content, username: userName } = response.data;
+      console.log("Fetched shared content:", content); // Debug: log the content array
+      setContents(content || []);
+      setUsername(userName || "Unknown User");
+    } catch (err) {
+      setError("Failed to load shared content. Check the link or try again.");
+      console.error("Error fetching shared content:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
     if (shareId) {
       fetchSharedContent();
     }
   }, [shareId]);
 
- function handleRefresh() {
+  function handleRefresh() {
     fetchSharedContent();
   }
-
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
@@ -49,12 +49,14 @@ export const Share = () => {
       </div>
       <h1>Shared Content by {username}</h1>
       <div className="flex gap-6 flex-wrap">
-        {contents.map((item) => (
+        {contents.map(({ type, link, title, _id, tags }) => (
           <Card
-            key={`${item.type}-${item.link}`}
-            title={item.title}
-            link={item.link}
-            type={item.type as "twitter" | "youtube"}
+            key={`${type}-${link}`}
+            type={type}
+            link={link}
+            title={title}
+            contentId={_id}
+            tags={tags}
           />
         ))}
       </div>

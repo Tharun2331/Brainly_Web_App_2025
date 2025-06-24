@@ -22,5 +22,5 @@ export function useContent() {
       clearInterval(interval)
     }
   },[])
-  return {contents, refetch}
+  return {contents,setContents, refetch}
 }

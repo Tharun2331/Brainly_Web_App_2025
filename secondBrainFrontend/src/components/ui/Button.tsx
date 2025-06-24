@@ -2,7 +2,7 @@ import type { ReactElement } from "react";
 
 export interface ButtonProps {
   variant: "primary" | "secondary";
-  size: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg";
   text: string;
   startIcon?: ReactElement;
   endIcon?: ReactElement;
@@ -20,14 +20,14 @@ const defaultStyles = "px-4 py-2 rounded-md font-light cursor-pointer"
 
 
 const sizeStyles = {
-  "sm": "py-2 px-2 mr-2 rounded-sm ",
-  "md": "py-4 px-4 mr-4 rounded-md",
-  "lg": "py-6 px-6 mr-6 rounded-xl"
+  "sm": "py-2 px-2  rounded-sm ",
+  "md": "py-4 px-4  rounded-md",
+  "lg": "py-6 px-6  rounded-xl"
 }
 
 export const Button = (props: ButtonProps) => {
     const isDisabled = props.loading || false;
-    return <button onClick={props.onClick} className={`${variantStyles[props.variant]} ${sizeStyles[props.size]} ${defaultStyles} ${
+    return <button onClick={props.onClick} className={`${variantStyles[props.variant]}  ${sizeStyles[props.size ?? "md"]} ${defaultStyles} ${
         props.fullWidth ? "w-full flex justify-center items-center" : ""
       } ${isDisabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
       disabled={isDisabled}>

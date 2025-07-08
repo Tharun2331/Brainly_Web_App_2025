@@ -9,6 +9,7 @@ export interface ButtonProps {
   onClick?:() => void;
   fullWidth?: boolean;
   loading?: boolean;
+  className?: string;
 }
 
 const variantStyles = {

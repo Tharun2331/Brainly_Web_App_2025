@@ -13,7 +13,8 @@ import { toast } from "react-toastify";
 
 export function Dashboard() {
   const [modalOpen, setModalOpen] = useState(false);
-  const { contents, setContents, refetch } = useContent();
+  const [content, setContent] = useState<string>("all");
+  const { contents, setContents, refetch } = useContent({ content });
   const [shareLink, setShareLink] = useState<string | null>(null);
 
   const handleDelete = async (contentId: string) => {
@@ -108,7 +109,7 @@ export function Dashboard() {
 
   return (
     <div>
-      <Sidebar />
+      <Sidebar content={content} setContent={setContent} />
       <div className="p-4 ml-72 min-h-screen bg-[var(--color-gray-200)]">
         <CreateContentModal open={modalOpen} onClose={() => setModalOpen(false)} />
         <div className="flex justify-end gap-4">
@@ -131,7 +132,7 @@ export function Dashboard() {
           {contents.map(({ type, link, title, _id, tags }) => (
             <Card
               key={`${type}-${link}`}
-              type={type}
+              type={type as "twitter" | "youtube"}
               link={link}
               title={title}
               contentId={_id}

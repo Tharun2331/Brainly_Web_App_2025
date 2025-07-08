@@ -2,10 +2,12 @@ import './App.css'
 import { Dashboard } from './pages/Dashboard'
 import { Signin } from './pages/Signin'
 import { Signup } from './pages/Signup'
+import { Start } from './pages/Start'
 import { Share } from './pages/Share'
 import {BrowserRouter, Routes, Route, Navigate} from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import {ProtectedRoute } from './components/ProtectedRoute';
+import { BrainIcon } from './icons/Brainly'
 
 
 function App() {
@@ -23,8 +25,9 @@ function App() {
         draggable
         pauseOnHover
       />
+      {/* <Navigate to="/signup" replace /> */}
       <Routes>
-        <Route path="/" element={<Navigate to="/signup" replace />} />
+        <Route path="/" element={<Start text={"Brainly"} icon={<BrainIcon />} />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/signin" element={<Signin />} />
         <Route path="/dashboard"

@@ -50,7 +50,7 @@ return <div className="h-screen w-screen bg-[var(--color-gray-200)] flex justify
     </div>
     <div>
       <p className="text-center text-sm text-gray-500 mt-4">
-        Don't have an account? <span className="text-blue-500 cursor-pointer" onClick={() => navigate("/signup")}>Signup</span>
+        Don't have an account? <span className="text-blue-500 cursor-pointer" onClick={() => navigate("/signup")}>Sign Up</span>
       </p>
     </div>
   </div>

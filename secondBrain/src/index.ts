@@ -273,6 +273,51 @@ app.post("/api/v1/signup", async (req: Request, res: Response) => {
 
   );
 
+  app.get("/api/v1/content/tweets", userMiddleware, async (req, res) => {
+    try {
+      const userId = req.userId;
+      const twitter = await contentModel.find({
+        userId: userId,
+        type: "twitter"
+      }). populate("tags", "tag").populate("userId", "username");
+      res.status(200).json({
+        message: "Tweets fetched successfully",
+        twitter: twitter,
+      });
+    }
+
+    catch (err) {
+      return res.status(500).json({
+        message: "Failed to fetch tweets",
+        error: err instanceof Error ? err.message : "Unknown error",
+      });
+    }
+  })
+
+  app.get("/api/v1/content/youtube", userMiddleware, async (req,res)=> {
+    try {
+      const userId = req.userId;
+
+      const youtubeVideos = await contentModel.find({
+        userId: userId,
+        type: "youtube"
+      }).populate("tags", "tag").populate("userId", "username");
+      return res.status(200).json({
+        message: "Youtube videos fetched successfully",
+        youtubeVideos: youtubeVideos,
+      });
+    }
+    catch (err) {
+      return res.status(500).json({
+        message: "Failed to fetch youtube videos",
+        error: err instanceof Error ? err.message : "Unknown error",
+      });
+    }
+  });
+ 
+
+  
+
   app.listen(port, ()=> {
     console.log(`Running on Port ${port}`)
   })

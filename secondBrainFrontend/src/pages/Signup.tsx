@@ -39,14 +39,14 @@ const handleSubmit = async () => {
 return <div className="h-screen w-screen bg-[var(--color-gray-200)] flex justify-center items-center">
 
   <div className="bg-white rounded-xl border-1 border-gray-300  min-w-48 p-10">
-    <Input placeholder="Email Address" ref={userNameRef} />
+    <Input placeholder="User Name" ref={userNameRef} />
     <Input placeholder="Password" ref={passwordRef} />
     <div className="flex justify-center items-center pt-4">
       <Button  variant="primary" text="Signup" fullWidth= {true} loading={loading} onClick={handleSubmit} />
     </div>
      <div>
       <p className="text-center text-sm text-gray-500 mt-4">
-        Already have an account? <span className="text-blue-500 cursor-pointer" onClick={() => navigate("/signin")}>Signin</span>
+        Already have an account? <span className="text-blue-500 cursor-pointer" onClick={() => navigate("/signin")}>Sign In</span>
       </p>
      </div>
   </div>

@@ -1,7 +1,6 @@
-import {useState} from "react";
+import { ArticleIcon } from "../../icons/Article"
 import { BrainIcon } from "../../icons/Brainly"
-import { HashTagsIcon } from "../../icons/HashTagsIcon"
-import { LinkIcon } from "../../icons/LinkIcon"
+import { NoteIcon } from "../../icons/NotesIcon"
 import { TwitterIcon } from "../../icons/TwitterIcon"
 import { YoutubeIcon } from "../../icons/YoutubeIcon"
 import { Button } from "./Button"
@@ -26,7 +25,7 @@ export function Sidebar({content, setContent}: SidebarProps) {
 
 
   return (
-    <div className="h-screen bg-white border-r border-r-gray-300 w-72 fixed left-0 top-0 pl-6 flex flex-col justify-between">
+    <div className=" hidden sm:flex h-screen bg-white border-r border-r-gray-300 w-72 fixed left-0 top-0 pl-6 flex flex-col justify-between">
       <div>
         <div className="flex text-2xl items-center gap-4 pt-4 cursor-pointer hover:scale-110 transition-transform duration-200">
           <div className="ml-2 ">
@@ -45,6 +44,21 @@ export function Sidebar({content, setContent}: SidebarProps) {
           icon={<YoutubeIcon />}  
           onClick={()=> setContent("youtube")}
           isActive = {content === "youtube"} />
+         
+         <SidebarItem 
+         text={"Articles"}
+         icon={<ArticleIcon />}
+         onClick={() => setContent("article")}
+         isActive={content ==="article"}
+         />
+
+        <SidebarItem 
+         text={"Notes"}
+         icon={<NoteIcon />}
+         onClick={() => setContent("note")}
+         isActive={content ==="note"}
+         />
+         
          <SidebarItem
           text={"All"} 
           icon={<BrainIcon />}  

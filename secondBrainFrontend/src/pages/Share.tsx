@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import { BACKEND_URL } from "../config";
 import { Card } from "../components/ui/Card"; // Reuse the Card component
 import { Button } from "../components/ui/Button";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
 export const Share = () => {
   const { shareId } = useParams<{ shareId: string }>(); // Get hash from URL
@@ -49,12 +49,13 @@ export const Share = () => {
       </div>
       <h1>Shared Content by {username}</h1>
       <div className="flex gap-6 flex-wrap">
-        {contents.map(({ type, link, title, _id, tags }) => (
+        {contents.map(({ type, link, description, title, _id, tags }) => (
           <Card
             key={`${type}-${link}`}
             type={type}
             link={link}
             title={title}
+            description={description}
             contentId={_id}
             tags={tags}
           />

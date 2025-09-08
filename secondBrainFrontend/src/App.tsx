@@ -4,11 +4,10 @@ import { Signin } from './pages/Signin'
 import { Signup } from './pages/Signup'
 import { Start } from './pages/Start'
 import { Share } from './pages/Share'
-import {BrowserRouter, Routes, Route, Navigate} from 'react-router-dom';
+import {BrowserRouter, Routes, Route} from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import {ProtectedRoute } from './components/ProtectedRoute';
 import { BrainIcon } from './icons/Brainly'
-
 
 function App() {
     

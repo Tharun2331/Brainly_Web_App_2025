@@ -1,3 +1,4 @@
+// src/components/Dashboard.tsx
 import "../App.css";
 import { Button } from "../components/ui/Button";
 import { PlusIcon } from "../icons/PlusIcon";
@@ -8,14 +9,23 @@ import { useState, useEffect } from "react";
 import { Sidebar } from "../components/ui/Sidebar";
 import { useContent } from "../hooks/useContent";
 import axios from "axios";
-import { BACKEND_URL, FRONTEND_URL } from "../config";
 import { toast } from "react-toastify";
+// import { ChatIcon } from "../icons/ChatIcon";
+
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL || "http://localhost:5173";
 
 export function Dashboard() {
   const [modalOpen, setModalOpen] = useState(false);
   const [content, setContent] = useState<string>("all");
   const { contents, setContents, refetch } = useContent({ content });
   const [shareLink, setShareLink] = useState<string | null>(null);
+  const [selectedNote, setSelectedNote] = useState<{
+    _id: string;
+    description?: string;
+    title?: string;
+    tags?: string[];
+  } | null> (null); 
 
   const handleDelete = async (contentId: string) => {
     try {
@@ -25,10 +35,9 @@ export function Dashboard() {
         return;
       }
       await axios.delete(`${BACKEND_URL}/api/v1/content/${contentId}`, {
-        headers: { "Authorization": token }
+        headers: { Authorization: token },
       });
-      // @ts-ignore
-      setContents(prev => prev.filter(item => item._id !== contentId));
+      setContents((prev) => prev.filter((item) => item._id !== contentId));
       toast.success("Content deleted successfully!", {
         position: "top-right",
         autoClose: 3000,
@@ -38,13 +47,19 @@ export function Dashboard() {
         draggable: true,
       });
     } catch (error) {
-      // @ts-ignore
-      console.error("Delete failed:", error.response?.data || error.message);
-      // @ts-ignore
-      toast.error(error.response?.data?.message || "Failed to delete content", {
-        position: "top-right",
-        autoClose: 3000,
-      });
+      if (typeof error === "object" && error !== null && "response" in error) {
+        // @ts-ignore
+        console.error("Delete failed:", error.response?.data || error.message);
+        // @ts-ignore
+        toast.error(
+          // @ts-ignore
+          error.response?.data?.message || "Failed to delete content",
+          { position: "top-right", autoClose: 3000 }
+        );
+      } else {
+        console.error("Delete failed:", error);
+        toast.error("Failed to delete content", { position: "top-right", autoClose: 3000 });
+      }
     }
   };
 
@@ -60,7 +75,11 @@ export function Dashboard() {
         { share: true },
         { headers: { Authorization: token } }
       );
-      const newShareLink = `${FRONTEND_URL}/share/${response.data.hash}`;
+      // Use the hash directly from the response
+      const hash = response.data.hash || "";
+      // Trim trailing slash from FRONTEND_URL to avoid double slash
+      const baseUrl = FRONTEND_URL.endsWith("/") ? FRONTEND_URL.slice(0, -1) : FRONTEND_URL;
+      const newShareLink = `${baseUrl}/share/${hash}`;
       setShareLink(newShareLink);
 
       toast.success(
@@ -68,13 +87,13 @@ export function Dashboard() {
           <p>Share Link Generated!</p>
           <input
             type="text"
-            value={newShareLink}
+            value={shareLink || newShareLink}
             readOnly
             className="w-full p-2 mt-2 border rounded"
           />
           <button
             onClick={() => {
-              navigator.clipboard.writeText(newShareLink);
+              navigator.clipboard.writeText(shareLink || newShareLink);
               toast.info("Link copied to clipboard!", { autoClose: 2000 });
             }}
             className="mt-2 px-4 py-2 bg-blue-500 text-white rounded"
@@ -107,12 +126,25 @@ export function Dashboard() {
     }
   };
 
+  const handleEditNote = (note: {_id: string; title?: string; description?: string; tags?: string[] }) => {
+    setSelectedNote(note);
+    setModalOpen(true);
+    
+  }
+
   return (
     <div>
       <Sidebar content={content} setContent={setContent} />
-      <div className="p-4 ml-72 min-h-screen bg-[var(--color-gray-200)]">
-        <CreateContentModal open={modalOpen} onClose={() => setModalOpen(false)} />
-        <div className="flex justify-end gap-4">
+      <div className="p-4 ml-4 md:ml-72 min-h-screen bg-[var(--color-gray-200)]">
+        <CreateContentModal open={modalOpen}
+          onClose={() => { 
+          setModalOpen(false) 
+          setSelectedNote(null)
+          }}
+          selectedNote = {selectedNote}
+          setContents={setContents}
+       />
+        <div className="flex justify-center  md:flex md:justify-end gap-4">
           <Button
             startIcon={<ShareIcon size="md" />}
             variant="secondary"
@@ -129,19 +161,26 @@ export function Dashboard() {
           />
         </div>
         <div className="flex gap-6 flex-wrap p-4">
-          {contents.map(({ type, link, title, _id, tags }) => (
+          {contents.map(({ type, link, title, description, _id, tags }) => (
             <Card
               key={`${type}-${link}`}
-              type={type as "twitter" | "youtube"}
+              type={type as "twitter" | "youtube" | "article" | "note"}
               link={link}
               title={title}
+              description={description}
               contentId={_id}
               tags={tags}
               onDelete={handleDelete}
+              onClick={() => type === "note" && handleEditNote({_id, title, description, tags: tags?.map(tag => tag.tag) || [] })}
             />
           ))}
         </div>
+        {/* <div className="flex justify-end mt-4 mr-2">
+            <Button startIcon={<ChatIcon size="30px"/>} variant="primary" className="rounded-xl w-15 h-15" />
+        </div> */}
       </div>
+
+
     </div>
   );
 }

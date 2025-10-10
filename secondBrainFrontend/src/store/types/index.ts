@@ -14,8 +14,9 @@ export interface Content {
   link?: string;
   description: string;
   title: string;
-  tags: Tag[];
+  tags: string[];
   userId?: string;
+
 }
 
 export interface AuthState {
@@ -32,6 +33,10 @@ export interface ContentState {
   loading: boolean;
   error: string | null;
   filter: "all" | "twitter" | "youtube" | "article" | "note";
+  sharedContents: Content[];
+  sharedUsername: string;
+  sharedLoading: boolean;
+  sharedError: string | null;
 }
 
 export interface UIState {
@@ -46,4 +51,8 @@ export interface UIState {
     description: string;
     tags: string[];
   } | null;
+  shareLoading: boolean;
+  shareError: string | null;
+  isDarkMode: boolean;
+  isSidebarOpen:boolean;
 }

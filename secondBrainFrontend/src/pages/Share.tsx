@@ -1,58 +1,82 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
 import { Card } from "../components/ui/Card"; // Reuse the Card component
-import { Button } from "../components/ui/Button";
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+import { fetchSharedContents } from "../store/slices/contentSlice";
+import { useAppDispatch, useAppSelector } from "../hooks/redux";
+
 
 export const Share = () => {
-  const { shareId } = useParams<{ shareId: string }>(); // Get hash from URL
-  const [contents, setContents] = useState<any[]>([]);
-  const [username, setUsername] = useState<string>("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  const fetchSharedContent = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await axios.get(`${BACKEND_URL}/api/v1/brain/${shareId}`);
-      const { content, username: userName } = response.data;
-      console.log("Fetched shared content:", content); // Debug: log the content array
-      setContents(content || []);
-      setUsername(userName || "Unknown User");
-    } catch (err) {
-      setError("Failed to load shared content. Check the link or try again.");
-      console.error("Error fetching shared content:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { shareId } = useParams<{ shareId: string }>(); // Get hash from URL
+  const dispatch = useAppDispatch();
+
+  const {
+    sharedContents,
+    sharedUsername,
+    sharedLoading,
+    sharedError
+  } = useAppSelector(state => state.content);
+
   useEffect(() => {
     if (shareId) {
-      fetchSharedContent();
+      dispatch(fetchSharedContents(shareId));
     }
-  }, [shareId]);
+  }, [dispatch,shareId]);
 
-  function handleRefresh() {
-    fetchSharedContent();
+
+  if (sharedLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-lg">Loading shared content...</div>
+      </div>
+    );
   }
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
-  if (!contents.length) return <div>No content available for this share link.</div>;
+  if(sharedError) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="text-red-600 mb-4">
+            {sharedError}
+          </div>
+          <div className="text-gray-500 text-sm">
+            Please check the share link or try again later.
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+ // Empty state
+ if (!sharedContents.length) {
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="text-center">
+        <div className="text-gray-600 mb-4">
+          No content available for this share link.
+        </div>
+        <div className="text-gray-500 text-sm">
+          The content may have been removed or the link is invalid.
+        </div>
+      </div>
+    </div>
+  );
+}
+
 
   return (
     <div className="p-4">
-      <div className="flex justify-end ">
-        <Button variant="primary" text="Refresh" onClick={handleRefresh} />
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold">
+          Shared Content by {sharedUsername}
+        </h1>
       </div>
-      <h1>Shared Content by {username}</h1>
+
       <div className="flex gap-6 flex-wrap">
-        {contents.map(({ type, link, description, title, _id, tags }) => (
+        {sharedContents.map(({ type, link, description, title, _id, tags }) => (
           <Card
-            key={`${type}-${link}`}
-            type={type}
+            key={_id}
+            type={type  as "twitter" | "youtube" | "article" | "note" }
             link={link}
             title={title}
             description={description}

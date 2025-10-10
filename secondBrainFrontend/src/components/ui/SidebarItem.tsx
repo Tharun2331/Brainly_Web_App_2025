@@ -5,7 +5,7 @@ export const SidebarItem =({text,icon,isActive,onClick}:{
   onClick?: () => void;
   isActive?: boolean;
 }) => {
-  return <div className={`flex text-gray-700 cursor-pointer rounded max-w-48 transition-all duration-150 ${isActive ? "bg-gray-300 font-bold" : "hover:bg-gray-200"} `} onClick={onClick}>
+  return <div className={`flex text-foreground cursor-pointer rounded-lg max-w-58 transition-all duration-150 ${isActive ? "bg-primary text-primary-foreground font-bold" : "hover:bg-muted"}`}  onClick={onClick}>
   <div className="p-2">
       {icon} 
     </div>

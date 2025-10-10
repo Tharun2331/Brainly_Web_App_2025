@@ -14,7 +14,7 @@ export const fetchContents = createAsyncThunk(
 
     if (filter === "twitter") {
       url = `${BACKEND_URL}/api/v1/content/tweets`;
-      responseKey = "twitter";
+      responseKey = "tweets";
     } else if (filter === "youtube") {
       url = `${BACKEND_URL}/api/v1/content/youtube`;
       responseKey = "youtubeVideos";
@@ -29,7 +29,8 @@ export const fetchContents = createAsyncThunk(
     const response = await axios.get(url, {
       headers: {Authorization:token},
     });
-    return response.data[responseKey] || [];
+    // Handle both old and new response formats
+    return response.data.data?.[responseKey] || response.data[responseKey] || [];
   }
 );
 
@@ -51,7 +52,7 @@ export const createContent = createAsyncThunk(
 
     const payload = {
       ...contentData,
-      tags: tagRes.data.tagIds,
+      tags: tagRes.data.data?.tagIds || tagRes.data.tagIds,
     };
 
     const response = await axios.post(
@@ -60,7 +61,8 @@ export const createContent = createAsyncThunk(
       { headers: { Authorization: token } }
     );
 
-    return response.data;
+    // Return the content object from the response
+    return response.data.data || response.data;
   }
 );
 
@@ -84,7 +86,7 @@ export const updateContent = createAsyncThunk(
 
     const payload = {
       ...contentData,
-      tags: tagRes.data.tagIds,
+      tags: tagRes.data.data?.tagIds || tagRes.data.tagIds,
     };
 
     const response = await axios.put(
@@ -93,7 +95,7 @@ export const updateContent = createAsyncThunk(
       { headers: { Authorization: token } }
     );
 
-    return response.data.content;
+    return response.data.data || response.data.content;
   }
 );
 
@@ -107,12 +109,25 @@ export const deleteContent = createAsyncThunk(
   }
 );
 
+export const fetchSharedContents = createAsyncThunk(
+  'content/fetchSharedContent',
+  async (shareId: string) => {
+    const response = await  axios.get(`${BACKEND_URL}/api/v1/brain/${shareId}`);
+    return response.data.data;
+  }
+)
+
+
 const initialState: ContentState = {
   contents: [],
   selectedContent: null,
   loading: false,
   error: null,
   filter: "all",
+  sharedContents: [],
+  sharedUsername: "",
+  sharedLoading: false,
+  sharedError: null,
 };
 
 
@@ -144,8 +159,17 @@ const contentSlice = createSlice({
         state.loading = false;
         state.error = action.error.message || 'Failed to fetch contents';
       })
+      .addCase(createContent.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(createContent.fulfilled, (state, action) => {
-        state.contents.push(action.payload);
+        state.loading = false;
+        state.contents.unshift(action.payload); // Add to beginning for newest first
+      })
+      .addCase(createContent.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to create content';
       })
       .addCase(updateContent.fulfilled, (state, action) => {
         const index = state.contents.findIndex(c => c._id === action.payload._id);
@@ -155,7 +179,20 @@ const contentSlice = createSlice({
       })
       .addCase(deleteContent.fulfilled, (state, action) => {
         state.contents = state.contents.filter(c => c._id !== action.payload);
-      });
+      })
+      .addCase(fetchSharedContents.pending, (state) => {
+        state.sharedLoading=true;
+        state.sharedError = null;
+      })
+      .addCase(fetchSharedContents.fulfilled, (state, action) => {
+        state.sharedLoading = false;
+        state.sharedContents = action.payload.content || [];
+        state.sharedUsername = action.payload.username || "Unknown User";
+      })
+      .addCase(fetchSharedContents.rejected, (state,action) => {
+        state.sharedLoading = false;
+        state.sharedError = action.error.message || "Failed to fetch shared content";
+      })
   },
 });
 

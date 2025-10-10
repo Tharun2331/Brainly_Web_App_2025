@@ -1,13 +1,14 @@
 // src/components/ui/CreateContentModal.tsx
 import { useEffect, useRef, useState } from "react";
-import { CrossIcon } from "../../icons/CrossIcon";
 import { Button } from "./Button";
 import { Input, MultiInput } from "./Input";
 import { useOutsideClick } from "../../hooks/useOutsideClick";
 import { Note } from "../../components/ui/Note";
-import axios from "axios";
+import { useAppDispatch, useAppSelector } from "../../hooks/redux";
+import { createContent, updateContent, fetchContents } from "../../store/slices/contentSlice";
+import { toast } from "react-toastify";
+import { Twitter, Youtube, FileText, StickyNote, X } from "lucide-react";
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 // @ts-ignore
 enum ContentType {
   Youtube = "youtube",
@@ -20,13 +21,17 @@ export function CreateContentModal({
    open,
   onClose,
   selectedNote,
-  setContents 
+   
 }: { 
     open: boolean;
     onClose: () => void;
     selectedNote?: { _id: string; title?: string; description?: string; tags?: string[] } | null;
-    setContents: (newContents: any[]) => void;
+
 }) {
+  const dispatch = useAppDispatch();
+  const {token} = useAppSelector(state => state.auth);
+  const {filter} = useAppSelector(state => state.content);
+
   const modref = useOutsideClick(onClose);
   const titleRef = useRef<HTMLInputElement>(null);
   const linkRef = useRef<HTMLInputElement>(null);
@@ -38,7 +43,8 @@ export function CreateContentModal({
   
   const [type, setType] = useState(ContentType.Youtube);
   const [error, setError] = useState<string | null>(null);
-  
+  const [loading, setLoading] = useState(false);
+
   // Add state for form values to ensure proper initialization
   const [formValues, setFormValues] = useState({
     title: "",
@@ -85,10 +91,16 @@ export function CreateContentModal({
         }, 0);
       }
       setError(null);
+      setLoading(false);
     }
   }, [open, selectedNote]);
 
   const addContent = async () => {
+    if (!token) {
+      setError("No authorization token found. Please log in.");
+      return;
+    }
+
     const title = titleRef.current?.value;
     const link = linkRef.current?.value;
     const description = type === ContentType.Note ? noteRef.current?.value : descriptionRef.current?.value;
@@ -111,82 +123,151 @@ export function CreateContentModal({
       return;
     }
 
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setError("No authorization token found");
-      return;
-    }
-
     try {
+      setLoading(true);
       setError(null);
-      const tagRes = await axios.post(
-        `${BACKEND_URL}/api/v1/tags`,
-        { tags },
-        {
-          headers: {
-            Authorization: token,
-          },
-        }
-      );
-      const tagIds = tagRes.data.tagIds;
 
-      const contentPayload: any = {
+      // Prepare content data
+      const contentData: any = {
         description,
         type,
-        tags: tagIds,
+        tags, // Pass tag names, Redux will handle converting to IDs
       };
+
       if (type !== ContentType.Note) {
-        contentPayload.title = title;
-        contentPayload.link = link;
+        contentData.title = title;
+        contentData.link = link;
       } else if (noteTitle) {
-        contentPayload.title = noteTitle;
+        contentData.title = noteTitle;
       }
 
       if (selectedNote) {
-        // Update the existing note
-        await axios.put(`${BACKEND_URL}/api/v1/content/${selectedNote._id}`, contentPayload, {
-          headers: {
-            Authorization: token 
-          },
+        // Update existing content
+        await dispatch(updateContent({ 
+          id: selectedNote._id, 
+          contentData, 
+          token 
+        })).unwrap();
+        
+        toast.success("Content updated successfully!", {
+          position: "top-right",
+          autoClose: 3000,
         });
-        // @ts-ignore
-        setContents((prev) => 
-          prev.map((item) => 
-            item._id === selectedNote._id ? {...item, ...contentPayload, tags: tagIds} : item) 
-        );
       } else {
         // Create new content
-        const response = await axios.post(`${BACKEND_URL}/api/v1/content`, contentPayload, {
-          headers: { Authorization: token },
+        await dispatch(createContent({ 
+          contentData, 
+          token 
+        })).unwrap();
+        
+        toast.success("Content created successfully!", {
+          position: "top-right",
+          autoClose: 3000,
         });
-        // @ts-ignore
-        setContents((prev) => [...prev, response.data]);
       }
 
+      // Refetch contents to ensure UI is up to date
+      dispatch(fetchContents({ filter, token }));
+      
+      // Close modal
       onClose();
     } catch (error: any) {
-      console.error("Error creating content:", error);
-      if (error.response) {
-        setError(error.response.data.message || "Failed to create content");
-      } else {
-        setError("An unexpected error occurred");
-      }
+      console.error("Error with content operation:", error);
+      setError(error.message || "An unexpected error occurred");
+      toast.error(error.message || "Failed to save content", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div>
       {open && (
-        <div>
-          <div className="w-screen h-screen bg-slate-500 fixed top-0 left-0 opacity-60 flex justify-center"></div>
-          <div className="w-screen h-screen fixed top-0 left-0 flex justify-center">
-            <div ref={modref} className="flex flex-col justify-center">
-              <span className="bg-white opacity-100 rounded p-4">
-                <div className="flex justify-end">
-                  <div onClick={onClose} className="cursor-pointer">
-                    <CrossIcon />
-                  </div>
+        <div className="fixed inset-0 z-50">
+          {/* Backdrop - Modern overlay with blur effect */}
+          <div 
+            className="w-screen h-screen bg-black/50 backdrop-blur-sm fixed top-0 left-0 transition-opacity duration-200"
+            onClick={onClose}
+          ></div>
+          
+          {/* Modal Content */}
+          <div className="w-screen h-screen fixed top-0 left-0 flex justify-center items-center p-4 pointer-events-none">
+            <div 
+              ref={modref} 
+              className="bg-card border border-border rounded-xl shadow-2xl p-6 pointer-events-auto relative z-10 w-full max-w-sm max-h-[90vh] overflow-y-auto transform transition-all duration-200 scale-100"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header with close button */}
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-semibold text-foreground">
+                  {selectedNote ? "Edit Content" : "Add New Content"}
+                </h2>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onClose();
+                  }} 
+                  className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded-lg hover:bg-muted"
+                  aria-label="Close modal"
+                >
+                  <X />
+                </button>
+              </div>
+
+              {/* Content Type Selector */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-foreground mb-3">
+                  Content Type
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    text="Youtube"
+                    onClick={() => setType(ContentType.Youtube)}
+                    loading={loading}
+                    startIcon={<Youtube size={20} />}
+                    className={`w-full ${type === ContentType.Youtube ? 
+                      "bg-chart-4/90 hover:bg-chart-4 text-primary-foreground" : 
+                      "bg-background border border-border text-foreground hover:bg-muted"
+                    }`}
+                  />
+                  <Button
+                    text="Twitter"
+                    onClick={() => setType(ContentType.Twitter)}
+                    startIcon={<Twitter size={20} />}
+                    loading={loading}
+                    className={`w-full ${type === ContentType.Twitter ? 
+                      "bg-chart-1/90 hover:bg-chart-1  text-primary-foreground" : 
+                      "bg-background border border-border text-foreground hover:bg-muted"
+                    }`}
+                  />
+                  <Button
+                    text="Article"
+                    onClick={() => setType(ContentType.Article)}
+                    startIcon={<FileText size={20} />}
+                    loading={loading}
+                    className={`w-full ${type === ContentType.Article ? 
+                      "bg-chart-2/90 hover:bg-chart-2  text-primary-foreground" : 
+                      "bg-background border border-border text-foreground hover:bg-muted"
+                    }`}
+                  />
+                  <Button
+                    text="Note"
+                    onClick={() => setType(ContentType.Note)}
+                    startIcon={<StickyNote size={20} />}
+                    loading={loading}
+                    className={`w-full ${type === ContentType.Note ? 
+                      "bg-chart-3/90 hover:bg-chart-3 text-primary-foreground" : 
+                      "bg-background border border-border text-foreground hover:bg-muted"
+                    }`}
+                  />
                 </div>
+              </div>
+
+              {/* Form Content */}
+              <div className="space-y-4 mb-6">
                 {type === ContentType.Note ? (
                   <Note 
                     ref={noteRef} 
@@ -198,48 +279,37 @@ export function CreateContentModal({
                     key={`note-${selectedNote?._id || 'new'}`} // Force re-render when selectedNote changes
                   />
                 ) : (
-                  <div key={`content-${type}`}>
+                  <div key={`content-${type}`} className="space-y-4">
                     <Input ref={titleRef} placeholder={"Title"} required={true} />
                     <Input ref={linkRef} placeholder={"Link"} required={true} />
-                    <Input ref={tagRef} placeholder={"Tags"} required={true} />
+                    <Input ref={tagRef} placeholder={"Tags (comma separated)"} required={true} />
                     <MultiInput ref={descriptionRef} placeholder={"Description"} required={true} />
                   </div>
                 )}
-                {error && <div className="text-red-500 text-center">{error}</div>}
-                <div className="flex flex-wrap justify-center gap-2 p-4 w-68">
-                  <Button
-                    text="Youtube"
-                    variant={type === ContentType.Youtube ? "primary" : "secondary"}
-                    onClick={() => setType(ContentType.Youtube)}
-                    size="md"
-                  />
-                  <Button
-                    text="Twitter"
-                    variant={type === ContentType.Twitter ? "primary" : "secondary"}
-                    onClick={() => setType(ContentType.Twitter)}
-                    size="md"
-                  />
-                  <Button
-                    text="Article"
-                    variant={type === ContentType.Article ? "primary" : "secondary"}
-                    onClick={() => setType(ContentType.Article)}
-                    size="md"
-                  />
-                  <Button
-                    text="Note"
-                    variant={type === ContentType.Note ? "primary" : "secondary"}
-                    onClick={() => setType(ContentType.Note)}
-                    size="md"
-                  />
+              </div>
+
+              {/* Error Message */}
+              {error && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-700 text-sm">{error}</p>
                 </div>
-                <div className="flex justify-center">
-                  <Button variant="primary" text="submit" size="sm" onClick={addContent} />
-                </div>
-              </span>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-3 pt-4 border-t border-border">
+                <Button 
+                  text={selectedNote ? "Update Content" : "Add Content"}
+                  fullWidth={true} 
+                  size="md" 
+                  onClick={addContent}  
+                  loading={loading}
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                />
+              </div>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </div>  
   );
 }

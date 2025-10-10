@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 
 export interface ButtonProps {
-  variant: "primary" | "secondary";
+  variant?: "primary" | "secondary";
   size?: "sm" | "md" | "lg";
   text?: string;
   startIcon?: ReactElement;
@@ -10,7 +10,6 @@ export interface ButtonProps {
   fullWidth?: boolean;
   loading?: boolean;
   className?: string;
-  
 }
 
 const variantStyles = {
@@ -18,13 +17,12 @@ const variantStyles = {
   'secondary': "bg-[var(--color-purple-200)] text-[var(--color-purple-600)]"
 }
 
-const defaultStyles = "px-4 py-2 rounded-md font-light cursor-pointer"
-
+const defaultStyles = "rounded-md font-medium cursor-pointer"
 
 const sizeStyles = {
-  "sm": "py-2 px-2  rounded-sm ",
-  "md": "py-4 px-4  rounded-md",
-  "lg": "py-6 px-6  rounded-xl"
+  "sm": "py-2 px-6 text-sm rounded-md",
+  "md": "py-3 px-8 text-base rounded-md", 
+  "lg": "py-4 px-10 text-lg rounded-lg"
 }
 
 export const Button = (props: ButtonProps) => {
@@ -32,9 +30,9 @@ export const Button = (props: ButtonProps) => {
   return (
     <button
       onClick={props.onClick}
-      className={`${variantStyles[props.variant]} ${sizeStyles[props.size ?? "md"]} ${defaultStyles} ${
+      className={`${variantStyles[props.variant?? ""]} ${sizeStyles[props.size ?? "md"]} ${defaultStyles} ${
         props.fullWidth ? "w-full flex justify-center items-center" : ""
-      } ${isDisabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"} ${props.className || ""}`} // Include className
+      } ${isDisabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"} ${props.className || ""}`}
       disabled={isDisabled}
     >
       <div className="flex items-center">
@@ -45,5 +43,3 @@ export const Button = (props: ButtonProps) => {
     </button>
   );
 }
-
- 

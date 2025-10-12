@@ -4,13 +4,15 @@ import authReducer from './slices/authSlice';
 import contentReducer from './slices/contentSlice';
 import uiReducer from './slices/uiSlice';
 import searchReducer from "./slices/searchSlice";
+import chatReducer from "./slices/chatSlice"; // NEW
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     content: contentReducer,
     ui: uiReducer,
-    search: searchReducer
+    search: searchReducer,
+    chat: chatReducer // NEW
   },
 
 });

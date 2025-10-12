@@ -1,3 +1,4 @@
+// src/components/ui/Sidebar.tsx - Add settings link
 import { Button } from "./Button"
 import { SidebarItem } from "./SidebarItem"
 import { useNavigate } from "react-router-dom"
@@ -15,7 +16,6 @@ import {
   X
 } from "lucide-react"
 import { closeSidebar } from "../../store/slices/uiSlice"
-
 
 export function Sidebar() {
   const navigate = useNavigate();
@@ -39,30 +39,31 @@ export function Sidebar() {
     dispatch(closeSidebar());
   }
 
-    return ( 
-    <>
-   {/* Backdrop for mobile - blurred background */}
-    {isSidebarOpen && (
-      <div 
-      className="sm:hidden fixed insert-0 bg-black/60 backdrop-blur-md z-40 transition-opacity duration-300"
-      onClick={handleCloseSidebar}
-      aria-hidden="true"
-      />
-    )}
 
-  {/* Desktop Sidebar - Always visible on desktop (sm and above) */}
-    <div className="hidden sm:flex h-screen bg-card border-r border-border w-72 fixed left-0 top-0 pl-6 flex-col justify-between z-30">
-      <div>
-        {/* Desktop Header */}
-               {/* Desktop Header */}
-               <div className="flex text-2xl items-center gap-4 pt-4">
+  return ( 
+    <>
+      {/* Backdrop for mobile */}
+      {isSidebarOpen && (
+        <div 
+          className="sm:hidden fixed inset-0 bg-black/60 backdrop-blur-md z-40 transition-opacity duration-300"
+          onClick={handleCloseSidebar}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Desktop Sidebar */}
+      <div className="hidden sm:flex h-screen bg-card border-r border-border w-72 fixed left-0 top-0 pl-6 flex-col justify-between z-30">
+        <div>
+          {/* Desktop Header */}
+          <div className="flex text-2xl items-center gap-4 pt-4">
             <div className="ml-2">
               <Brain />
             </div>
             Brainly
           </div>
-{/* Desktop Navigation */}
-<div className="pt-8 pl-4">
+
+          {/* Desktop Navigation */}
+          <div className="pt-8 pl-4">
             <SidebarItem 
               text={"Tweets"}
               icon={<Twitter />} 
@@ -94,7 +95,8 @@ export function Sidebar() {
               isActive={currentFilter === "all"}
             />
           </div>
-      </div>
+        </div>
+
         {/* Desktop Logout Button */}
         <div className="flex items-end justify-center mb-8 mr-4">
           <Button 
@@ -105,8 +107,9 @@ export function Sidebar() {
             startIcon={<LogOut />}
           />
         </div>
-        </div>
-      {/* Mobile Sidebar - Slides in from left, takes 70% width */}
+      </div>
+
+      {/* Mobile Sidebar */}
       <div 
         className={`
           sm:hidden 
@@ -131,7 +134,7 @@ export function Sidebar() {
           shadow-2xl
         `}
       >
-<div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto">
           {/* Mobile Header with Close Button */}
           <div className="flex items-center justify-between pt-4 pr-4 pb-2 sticky top-0 bg-card z-10">
             <div className="flex text-xl items-center gap-3">
@@ -184,7 +187,7 @@ export function Sidebar() {
           </div>
         </div>
 
-        {/* Mobile Logout Button - Inside Sidebar */}
+        {/* Mobile Logout Button */}
         <div className="flex items-end justify-center mb-6 mr-4 mt-4">
           <Button 
             text={"Logout"} 
@@ -194,8 +197,7 @@ export function Sidebar() {
             startIcon={<LogOut />}
           />
         </div>
-        </div>
-
-      </>
-    )
+      </div>
+    </>
+  )
 }

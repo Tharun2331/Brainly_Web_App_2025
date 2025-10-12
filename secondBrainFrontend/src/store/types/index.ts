@@ -16,7 +16,9 @@ export interface Content {
   title: string;
   tags: string[];
   userId?: string;
-
+  processingStatus?: 'pending' | 'processing' | 'completed' | 'failed';
+  processingError?: string;
+  contentMetadata?: any;
 }
 
 export interface AuthState {

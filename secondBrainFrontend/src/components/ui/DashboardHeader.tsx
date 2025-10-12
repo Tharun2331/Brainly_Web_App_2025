@@ -1,7 +1,6 @@
-// src/components/ui/DashboardHeader.tsx - WITH TOAST NOTIFICATION
-import { MessageCircle, Moon, Sun, Menu as MenuIcon, Search, Plus as PlusIcon, Share2 as ShareIcon } from "lucide-react";
+// src/components/ui/DashboardHeader.tsx
+import { Moon, Sun, Menu as MenuIcon, Search, Plus as PlusIcon, Share2 as ShareIcon } from "lucide-react";
 import { Tooltip } from "./Tooltip";
-import { toast } from "react-toastify";
 
 interface DashboardHeaderProps {
   isDarkMode: boolean;
@@ -22,22 +21,9 @@ export function DashboardHeader({
   onToggleSidebar,
   onOpenSearch,
 }: DashboardHeaderProps) {
-  
-  const handleChatClick = () => {
-    toast.info("Chat feature coming soon! 🚀", {
-      position: "top-right",
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
-  };
-
   return (
     <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-border pb-4 mb-4">
       <div className="flex items-center justify-between gap-3">
-        {/* Left Section - Hamburger Menu (Mobile Only) */}
         <div className="flex items-center gap-2">
           <Tooltip content="Menu">
             <button
@@ -50,9 +36,7 @@ export function DashboardHeader({
           </Tooltip>
         </div>
 
-        {/* Right Section - All Action Buttons */}
         <div className="flex items-center gap-2 ml-auto">
-          {/* Search Button - Mobile Only (icon only) */}
           <Tooltip content="Search">
             <button
               onClick={onOpenSearch}
@@ -63,7 +47,6 @@ export function DashboardHeader({
             </button>
           </Tooltip>
 
-          {/* Dark Mode Toggle - Icon only on mobile, Icon + Text on desktop */}
           <Tooltip content={isDarkMode ? "Light mode" : "Dark mode"}>
             <button
               onClick={onToggleDarkMode}
@@ -80,22 +63,6 @@ export function DashboardHeader({
               </span>
             </button>
           </Tooltip>
-
-          {/* Chat Button - Icon only on mobile, Icon + Text on desktop */}
-          <Tooltip content="Chat">
-            <button
-              onClick={handleChatClick}
-              className="p-2.5 md:px-4 md:py-2 bg-card border border-border rounded-lg hover:bg-muted transition-colors active:scale-95 flex items-center gap-2"
-              aria-label="Open chat"
-            >
-              <MessageCircle className="w-5 h-5 text-foreground" />
-              <span className="hidden md:inline text-sm font-medium text-foreground">
-                Chat
-              </span>
-            </button>
-          </Tooltip>
-
-          {/* Share Brain Button - Icon only on mobile, Icon + Text on desktop */}
           <Tooltip content={shareLoading ? "Generating link..." : "Share Brain"}>
             <button
               onClick={onShareBrain}
@@ -116,7 +83,6 @@ export function DashboardHeader({
             </button>
           </Tooltip>
 
-          {/* Add Content Button - Primary Action - Icon only on mobile, Icon + Text on desktop */}
           <Tooltip content="Add Content">
             <button
               onClick={onAddContent}

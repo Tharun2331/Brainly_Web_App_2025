@@ -1,8 +1,8 @@
-// src/pages/Dashboard.tsx - FIXED VERSION
+// src/pages/Dashboard.tsx - Add chat components
 import "../App.css";
 import { Card } from "../components/ui/Card";
 import { CreateContentModal } from "../components/ui/CreateContentModal";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Sidebar } from "../components/ui/Sidebar";
 import { generateShareLink, clearShareLink, toggleSidebar, toggleDarkMode } from "../store/slices/uiSlice";
 import { toast } from "react-toastify";
@@ -11,6 +11,9 @@ import { deleteContent, fetchContents } from "../store/slices/contentSlice";
 import { useTheme } from "../hooks/useTheme";
 import SearchBar from "../components/ui/SearchBar";
 import { DashboardHeader } from "../components/ui/DashboardHeader";
+import { ProcessingMonitor } from "../components/ui/ProcessingMonitor";
+import { ChatInterface } from "../components/ui/ChatInterface"; // NEW
+import { ChatButton } from "../components/ui/ChatButton"; // NEW
 
 export function Dashboard() {
   const dispatch = useAppDispatch();
@@ -28,11 +31,62 @@ export function Dashboard() {
     tags?: string[];
   } | null>(null);
 
+  // Track completed items to avoid duplicate notifications
+  const completedItemsRef = useRef<Set<string>>(new Set());
+
   useEffect(() => {
     if (token) {
       dispatch(fetchContents({ filter, token }));
     }
   }, [dispatch, filter, token]);
+
+  // Auto-refresh content when there are pending/processing items
+  useEffect(() => {
+    if (!token) return;
+
+    // Check if there are any pending or processing items
+    const hasProcessingItems = contents.some(content => 
+      content.processingStatus === 'pending' || content.processingStatus === 'processing'
+    );
+
+    if (hasProcessingItems) {
+      // Refresh every 5 seconds while there are processing items
+      const interval = setInterval(() => {
+        dispatch(fetchContents({ filter, token }));
+      }, 5000);
+
+      return () => clearInterval(interval);
+    }
+  }, [dispatch, filter, token, contents]);
+
+  // Track processing completion
+  useEffect(() => {
+    if (!token) return;
+
+    // Check for newly completed items
+    const completedItems = contents.filter(content => 
+      content.processingStatus === 'completed' && 
+      content.contentMetadata?.extractedAt
+    );
+
+    // Find items that are newly completed (not in our tracking set)
+    const newlyCompletedItems = completedItems.filter(item => 
+      !completedItemsRef.current.has(item._id)
+    );
+
+    if (newlyCompletedItems.length > 0) {
+      // Add all newly completed items to our tracking set
+      newlyCompletedItems.forEach(item => {
+        completedItemsRef.current.add(item._id);
+      });
+    }
+
+    // Update tracking set to include all currently completed items
+    // This ensures we don't miss any items if the component re-renders
+    completedItems.forEach(item => {
+      completedItemsRef.current.add(item._id);
+    });
+  }, [contents, token]);
 
   const handleDelete = async (contentId: string) => {
     try {
@@ -78,7 +132,7 @@ export function Dashboard() {
               type="text"
               value={newShareLink}
               readOnly
-              className="w-full p-2 mt-2 border rounded bg-white text-black"
+              className="w-full p-2 mt-2 border border-border rounded bg-background text-foreground"
               onClick={(e) => e.currentTarget.select()}
             />
             <button
@@ -86,7 +140,7 @@ export function Dashboard() {
                 navigator.clipboard.writeText(newShareLink);
                 toast.info("Link copied to clipboard!", { autoClose: 2000 });
               }}
-              className="mt-2 w-full px-4 py-2 bg-primary text-white rounded hover:bg-primary/90"
+              className="mt-2 w-full px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors"
             >
               Copy Link
             </button>
@@ -123,7 +177,6 @@ export function Dashboard() {
     dispatch(toggleSidebar());
   };
 
-  // Helper function to extract tag strings safely
   const extractTagStrings = (tags: any): string[] => {
     if (!tags || !Array.isArray(tags)) return [];
     
@@ -139,7 +192,6 @@ export function Dashboard() {
       <Sidebar />
       
       <div className="p-4 ml-0 sm:ml-72 min-h-screen bg-background">
-        {/* Modals */}
         <CreateContentModal
           open={modalOpen}
           onClose={() => {
@@ -149,7 +201,6 @@ export function Dashboard() {
           selectedNote={selectedNote}
         />
 
-        {/* Single Header with Icon-Only Buttons */}
         <DashboardHeader
           isDarkMode={isDarkMode}
           shareLoading={shareLoading}
@@ -160,12 +211,31 @@ export function Dashboard() {
           onOpenSearch={() => setIsSearchOpen(true)}
         />
 
-        {/* Desktop Search Bar - Below Header */}
+        {token && <ProcessingMonitor token={token} />}
+
+        {/* Processing Status Indicator */}
+        {(() => {
+          const processingCount = contents.filter(content => 
+            content.processingStatus === 'pending' || content.processingStatus === 'processing'
+          ).length;
+          
+          if (processingCount > 0) {
+            return (
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 px-4 py-3 rounded-lg mt-4 flex items-center gap-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                <p className="text-sm">
+                  {processingCount} item{processingCount > 1 ? 's' : ''} being processed...
+                </p>
+              </div>
+            );
+          }
+          return null;
+        })()}
+
         <div className="hidden md:block mb-6">
           <SearchBar isMobile={false} />
         </div>
 
-        {/* Mobile Search Modal - Full Screen */}
         {isSearchOpen && (
           <SearchBar
             isMobile={true}
@@ -173,7 +243,6 @@ export function Dashboard() {
           />
         )}
 
-        {/* Share Error Alert */}
         {shareError && (
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg mt-4 flex items-start justify-between">
             <p className="flex-1">{shareError}</p>
@@ -186,9 +255,8 @@ export function Dashboard() {
           </div>
         )}
 
-        {/* Content Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
-          {contents.map(({ type, link, title, description, _id, tags }, index) => (
+          {contents.map(({ type, link, title, description, _id, tags, processingStatus, processingError, contentMetadata }, index) => (
             <Card
               key={`${_id}-${index}`}
               type={type as "twitter" | "youtube" | "article" | "note"}
@@ -204,11 +272,13 @@ export function Dashboard() {
                 description, 
                 tags: extractTagStrings(tags)
               })}
+              processingStatus={processingStatus}
+              processingError={processingError}
+              contentMetadata={contentMetadata}
             />
           ))}
         </div>
 
-        {/* Empty State */}
         {contents.length === 0 && !shareError && (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
@@ -227,6 +297,10 @@ export function Dashboard() {
           </div>
         )}
       </div>
+
+      {/* NEW: Chat Interface and Button */}
+      <ChatInterface />
+      <ChatButton />
     </div>
   );
 }

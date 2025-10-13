@@ -50,7 +50,7 @@ export function DashboardHeader({
           <Tooltip content={isDarkMode ? "Light mode" : "Dark mode"}>
             <button
               onClick={onToggleDarkMode}
-              className="p-2.5 md:px-4 md:py-2 bg-card border border-border rounded-lg hover:bg-muted transition-colors active:scale-95 flex items-center gap-2"
+              className="p-2.5 md:px-4 md:py-2 bg-card border border-border rounded-lg hover:bg-muted transition-colors active:scale-95 flex items-center gap-2 cursor-pointer"
               aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
             >
               {isDarkMode ? (
@@ -67,8 +67,8 @@ export function DashboardHeader({
             <button
               onClick={onShareBrain}
               disabled={shareLoading}
-              className={`p-2.5 md:px-4 md:py-2 bg-card border border-border rounded-lg hover:bg-muted transition-colors active:scale-95 flex items-center gap-2 ${
-                shareLoading ? "opacity-50 cursor-not-allowed" : ""
+              className={`p-2.5 md:px-4 md:py-2 bg-card border border-border rounded-lg hover:bg-muted transition-colors active:scale-95 flex items-center gap-2 cursor-pointer ${
+                shareLoading ? "opacity-50 cursor-not-allowed " : ""
               }`}
               aria-label="Share brain"
             >
@@ -86,7 +86,7 @@ export function DashboardHeader({
           <Tooltip content="Add Content">
             <button
               onClick={onAddContent}
-              className="p-2.5 md:px-4 md:py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors active:scale-95 shadow-sm flex items-center gap-2"
+              className="p-2.5 md:px-4 md:py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors active:scale-95 shadow-sm flex items-center gap-2 cursor-pointer"
               aria-label="Add content"
             >
               <PlusIcon className="w-5 h-5" />

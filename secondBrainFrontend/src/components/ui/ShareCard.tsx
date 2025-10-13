@@ -146,7 +146,7 @@ export const ShareCard = ({
               rel="noopener noreferrer"
               className="text-muted-foreground hover:text-foreground transition-colors p-1 flex-shrink-0"
             >
-              <ExternalLink className="w-4 h-4" />
+              <ExternalLink className="w-4 h-4 cursor-pointer" />
             </a>
           )}
         </div>
@@ -195,7 +195,7 @@ export const ShareCard = ({
               rel="noopener noreferrer"
               className="text-xs text-primary hover:underline inline-flex items-center gap-1"
             >
-              Read full article <ExternalLink className="w-3 h-3" />
+              Read full article <ExternalLink className="w-3 h-3 cursor-pointer" />
             </a>
           </div>
         )}

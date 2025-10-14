@@ -290,7 +290,7 @@ export function Dashboard() {
             <p className="text-muted-foreground mb-6">Start adding your favorite content to organize your brain</p>
             <button
               onClick={() => setModalOpen(true)}
-              className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+              className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors  cursor-pointer"
             >
               Add Your First Content
             </button>

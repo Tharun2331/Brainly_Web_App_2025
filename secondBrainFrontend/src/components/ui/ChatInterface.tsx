@@ -63,6 +63,16 @@ export function ChatInterface() {
     }
   }, [isOpen]);
 
+  // Re-focus input when streaming finishes
+  useEffect(() => {
+    if (!isStreaming && isOpen && inputRef.current) {
+      // Small delay to ensure the DOM has updated
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    }
+  }, [isStreaming, isOpen]);
+
   const loadSuggestions = async () => {
     try {
       const response = await fetch(`${BACKEND_URL}/api/v1/chat/suggestions`, {
@@ -169,6 +179,7 @@ export function ChatInterface() {
   };
 
   const handleSuggestionClick = (suggestion: string) => {
+    setSuggestions([]); // Clear suggestions when user clicks one
     handleSend(suggestion);
   };
 
@@ -359,7 +370,7 @@ export function ChatInterface() {
     value={input}
     onChange={(e) => setInput(e.target.value)}
     onKeyPress={handleKeyPress}
-    placeholder="Ask about your content..."
+    placeholder={isStreaming ? "AI is thinking..." : "Ask about your content..."}
     disabled={isStreaming}
     className="flex-1 px-4 py-3 bg-muted border border-border rounded-lg 
              focus:outline-none focus:ring-2 focus:ring-primary 

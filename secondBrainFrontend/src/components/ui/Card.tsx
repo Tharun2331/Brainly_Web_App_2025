@@ -28,6 +28,12 @@ interface Cardprops {
   description?: string;
   onClick?: () => void;
   processingStatus?: 'pending' | 'processing' | 'completed' | 'failed';
+  processingError?: string;
+  contentMetadata?: {
+    wordCount?: number;
+    extractionMethod?: string;
+    author?: string;
+  };
 }
 
 export const Card = ({ 
@@ -39,7 +45,7 @@ export const Card = ({
   tags, 
   description, 
   onClick,
-  processingStatus = 'completed'
+  processingStatus = 'completed',
 }: Cardprops) => {
   const tweetRef = useRef<HTMLQuoteElement>(null);
   const [, setTweetLoaded] = useState(false);

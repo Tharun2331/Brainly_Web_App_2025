@@ -31,6 +31,7 @@ Brainly is a web application that helps users save and organize their important 
 ### Frontend
 - React with TypeScript
 - React Router for navigation
+- Redux
 - Tailwind CSS for styling
 - Axios for API requests
 - React Toastify for notifications

@@ -104,3 +104,30 @@ The application should now be running on:
 5. Share your collection using the "Share Brain" button
 
 ---
+
+
+# Docker Version
+# SecondBrain Full Stack Application
+
+## Prerequisites
+- Docker Desktop installed
+- Git installed
+
+## Setup Instructions
+
+1. Clone the repository:
+   git clone <your-repo-url>
+   cd SecondBrainFullStack
+   2. Create `.env` file:
+   
+   cp .env.example .env
+      Then edit `.env` with your actual values.
+
+3. Build and start containers:
+   docker-compose up -d
+   4. Access the application:
+   - Frontend: http://localhost:5173
+   - Backend API: http://localhost:3000
+
+## Stop Containers
+docker-compose down

@@ -1,0 +1,56 @@
+# Git files
+.git
+.gitignore
+.gitattributes
+
+# Environment files
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+
+# Documentation
+README.md
+*.md
+ContentManagementApplicationDocs.txt
+
+# IDE and editor files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Docker files (don't include docker-compose in build context)
+docker-compose.yml
+docker-compose.*.yml
+.dockerignore
+
+# Build artifacts (will be rebuilt in containers)
+**/dist
+**/node_modules
+**/build
+**/.next
+**/out
+
+# TypeScript build info
+**/tsconfig.tsbuildinfo

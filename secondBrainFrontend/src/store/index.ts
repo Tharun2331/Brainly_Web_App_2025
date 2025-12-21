@@ -4,7 +4,7 @@ import authReducer from './slices/authSlice';
 import contentReducer from './slices/contentSlice';
 import uiReducer from './slices/uiSlice';
 import searchReducer from "./slices/searchSlice";
-import chatReducer from "./slices/chatSlice"; // NEW
+import chatReducer from "./slices/chatSlice"; 
 
 export const store = configureStore({
   reducer: {
@@ -12,7 +12,7 @@ export const store = configureStore({
     content: contentReducer,
     ui: uiReducer,
     search: searchReducer,
-    chat: chatReducer // NEW
+    chat: chatReducer 
   },
 
 });

@@ -266,22 +266,3 @@ If you encounter any issues:
 2. Verify all environment variables are set correctly
 3. Ensure Docker Desktop is running
 4. Check Docker Hub images are accessible
-
-## 📄 License
-
-[Your License Here]
-
----
-
-**Happy Coding! 🚀**
-```
-
-This README covers:
-- Quick start with Docker images
-- Step-by-step setup
-- Environment variable configuration
-- Troubleshooting
-- Useful commands
-- Alternative methods
-
-You can save this as `README-DOCKER.md` or replace the Docker section in your existing README.

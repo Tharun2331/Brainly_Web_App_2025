@@ -1,9 +1,3 @@
-Checking the current README and docker-compose.yml to draft a Docker-focused README:
-
-
-[3 tools called]
-
-
 Docker-focused README:
 
 ```markdown

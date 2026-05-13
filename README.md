@@ -1,133 +1,268 @@
-# Brainly
+Docker-focused README:
 
-Brainly is a web application that helps users save and organize their important online content in one place. Users can save YouTube videos and tweets, organize them, and share their curated collection with others.
+```markdown
+# SecondBrain Full Stack Application - Docker Version
 
-## Features
+A containerized full-stack application for managing and organizing your digital content using Docker.
 
-- **Content Management**
-  - Save YouTube videos with titles and links
-  - Save tweets with custom titles
-  - View saved content in an organized dashboard
-  - Delete unwanted content
+## 🐳 Quick Start with Docker Images
 
-- **User Authentication**
-  - Secure signup with username and password
-  - Protected routes with JWT authentication
-  - Password encryption using bcrypt
-
-- **Sharing Capabilities**
-  - Generate unique share links for your content collection
-  - View other users' shared collections
-  - Real-time content updates
-
-- **User Interface**
-  - Clean and modern dashboard
-  - Responsive design
-  - Interactive content cards
-  - Toast notifications for actions
-
-## Tech Stack
-
-### Frontend
-- React with TypeScript
-- React Router for navigation
-- Redux
-- Tailwind CSS for styling
-- Axios for API requests
-- React Toastify for notifications
-
-### Backend
-- Node.js with Express
-- MongoDB with Mongoose
-- JWT for authentication
-- Zod for input validation
-- CORS enabled
-
-## Getting Started
-
-### Prerequisites
-- Node.js (v14 or higher)
-- MongoDB database
-- npm or yarn
-
-### Installation
-
-1. Clone the repository
-    ```sh
-    git clone https://github.com/Tharun2331/Brainly.git
-    cd SecondBrain
-    ```
-
-2. Install backend dependencies
-    ```sh
-    cd secondBrain
-    npm install
-    ```
-
-3. Install frontend dependencies
-    ```sh
-    cd ../secondBrainFrontend
-    npm install
-    ```
-
-4. Create a `.env` file in the `secondBrain` directory with the following variables:
-    ```env
-    MONGODBURI=your_mongodb_connection_string
-    USER_JWT_SECRET=your_jwt_secret
-    RANDOM_STRING=your_random_string_for_hash_generation
-    ```
-
-### Running the Application
-
-1. Start the backend server
-    ```sh
-    cd secondBrain
-    npm run dev
-    ```
-
-2. Start the frontend development server
-    ```sh
-    cd secondBrainFrontend
-    npm run dev
-    ```
-
-The application should now be running on:
-- Frontend: http://localhost:5173
-- Backend: http://localhost:3000
-
-## Usage
-
-1. Create an account using the signup page
-2. Login with your credentials
-3. Add content using the "Add Content" button
-4. View your saved content in the dashboard
-5. Share your collection using the "Share Brain" button
-
----
-
-
-# Docker Version
-# SecondBrain Full Stack Application
+This guide will help you run the application using pre-built Docker images from Docker Hub.
 
 ## Prerequisites
-- Docker Desktop installed
-- Git installed
 
-## Setup Instructions
+- **Docker Desktop** installed and running
+  - Download: [https://www.docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop)
+- **Git** (optional, if cloning repository)
 
-1. Clone the repository:
-   git clone <your-repo-url>
-   cd SecondBrainFullStack
-   2. Create `.env` file:
-   
-   cp .env.example .env
-      Then edit `.env` with your actual values.
+## 🚀 Quick Start (Using Pre-built Images)
 
-3. Build and start containers:
-   docker-compose up -d
-   4. Access the application:
-   - Frontend: http://localhost:5173
-   - Backend API: http://localhost:3000
+### Step 1: Pull Docker Images
 
-## Stop Containers
+Pull the latest images from Docker Hub:
+
+```bash
+docker pull tharun2313/secondbrain-backend:latest
+docker pull tharun2313/secondbrain-frontend:latest
+```
+
+Or use docker-compose to pull automatically (see Step 2).
+
+### Step 2: Create docker-compose.yml
+
+Create a file named `docker-compose.yml` in a new directory:
+
+```yaml
+services:
+  backend:
+    image: tharun2313/secondbrain-backend:latest
+    container_name: secondbrain-backend
+    restart: unless-stopped
+    ports: 
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - MONGODBURI=${MONGODBURI}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:5173}
+      - USER_JWT_SECRET=${USER_JWT_SECRET}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - PINECONE_API_KEY=${PINECONE_API_KEY}
+    networks: 
+      - secondbrain-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend: 
+    image: tharun2313/secondbrain-frontend:latest
+    container_name: secondbrain-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_BACKEND_URL=${VITE_BACKEND_URL:-http://localhost:3000}
+      - VITE_FRONTEND_URL=${VITE_FRONTEND_URL:-http://localhost:5173}
+    depends_on:
+      - backend
+    networks:
+      - secondbrain-network
+
+networks:
+  secondbrain-network:
+    driver: bridge
+```
+
+### Step 3: Create .env File
+
+Create a `.env` file in the same directory as `docker-compose.yml`:
+
+```env
+# MongoDB Connection
+# Option 1: Local MongoDB
+MONGODBURI=mongodb://localhost:27017/secondbrain
+
+# Option 2: MongoDB Atlas (Cloud)
+# MONGODBURI=mongodb+srv://username:password@cluster.mongodb.net/database?retryWrites=true&w=majority
+
+# Backend Environment Variables
+USER_JWT_SECRET=your_jwt_secret_key_here_make_it_long_and_random
+OPENAI_API_KEY=sk-your-openai-api-key-here
+PINECONE_API_KEY=your-pinecone-api-key-here
+FRONTEND_URL=http://localhost:5173
+
+# Frontend Environment Variables
+VITE_BACKEND_URL=http://localhost:3000
+VITE_FRONTEND_URL=http://localhost:5173
+```
+
+**Important:** Replace all placeholder values with your actual credentials.
+
+### Step 4: Run the Application
+
+```bash
+# Pull latest images (if not already pulled)
+docker-compose pull
+
+# Start containers in detached mode
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+```
+
+### Step 5: Access the Application
+
+Once containers are running, access the application at:
+
+- **Frontend:** http://localhost:5173
+- **Backend API:** http://localhost:3000
+- **Health Check:** http://localhost:3000/api/v1/health
+
+## 📋 Alternative: Manual Docker Run
+
+If you prefer not to use docker-compose, you can run containers individually:
+
+### Run Backend:
+
+```bash
+docker run -d \
+  --name secondbrain-backend \
+  -p 3000:3000 \
+  -e NODE_ENV=production \
+  -e PORT=3000 \
+  -e MONGODBURI="your_mongodb_uri" \
+  -e FRONTEND_URL="http://localhost:5173" \
+  -e USER_JWT_SECRET="your_jwt_secret" \
+  -e OPENAI_API_KEY="your_openai_key" \
+  -e PINECONE_API_KEY="your_pinecone_key" \
+  tharun2313/secondbrain-backend:latest
+```
+
+### Run Frontend:
+
+```bash
+docker run -d \
+  --name secondbrain-frontend \
+  -p 5173:5173 \
+  -e VITE_BACKEND_URL="http://localhost:3000" \
+  -e VITE_FRONTEND_URL="http://localhost:5173" \
+  tharun2313/secondbrain-frontend:latest
+```
+
+## 🛠️ Useful Commands
+
+### Container Management
+
+```bash
+# View running containers
+docker-compose ps
+
+# View logs
+docker-compose logs -f
+docker-compose logs backend
+docker-compose logs frontend
+
+# Stop containers
+docker-compose stop
+
+# Start containers
+docker-compose start
+
+# Restart containers
+docker-compose restart
+
+# Stop and remove containers
 docker-compose down
+
+# Stop and remove containers + volumes
+docker-compose down -v
+```
+
+### Image Management
+
+```bash
+# List all images
+docker images
+
+# Remove unused images
+docker image prune
+
+# Pull latest images
+docker-compose pull
+
+# Check image details
+docker inspect tharun2313/secondbrain-backend:latest
+```
+
+## 🔍 Troubleshooting
+
+### Containers won't start
+
+```bash
+# Check logs for errors
+docker-compose logs
+
+# Verify .env file exists and has correct values
+cat .env
+
+# Check if ports are already in use
+netstat -ano | findstr :3000
+netstat -ano | findstr :5173
+```
+
+### Backend connection errors
+
+- Verify `MONGODBURI` is correct in `.env`
+- Check MongoDB is accessible (if using local MongoDB)
+- Ensure all API keys are valid
+
+### Frontend can't connect to backend
+
+- Verify `VITE_BACKEND_URL` is set to `http://localhost:3000`
+- Check backend container is running: `docker-compose ps`
+- Check backend logs: `docker-compose logs backend`
+
+### Port already in use
+
+If ports 3000 or 5173 are already in use, modify `docker-compose.yml`:
+
+```yaml
+ports:
+  - "3001:3000"  # Change host port to 3001
+```
+
+## 📦 Docker Images
+
+- **Backend:** [tharun2313/secondbrain-backend](https://hub.docker.com/r/tharun2313/secondbrain-backend)
+- **Frontend:** [tharun2313/secondbrain-frontend](https://hub.docker.com/r/tharun2313/secondbrain-frontend)
+
+## 🔐 Environment Variables
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `MONGODBURI` | MongoDB connection string | Yes |
+| `USER_JWT_SECRET` | Secret key for JWT tokens | Yes |
+| `OPENAI_API_KEY` | OpenAI API key | Yes |
+| `PINECONE_API_KEY` | Pinecone API key | Yes |
+| `FRONTEND_URL` | Frontend URL for CORS | Yes |
+| `VITE_BACKEND_URL` | Backend API URL | Yes |
+| `VITE_FRONTEND_URL` | Frontend URL | Yes |
+
+## 📝 Notes
+
+- Images are automatically pulled from Docker Hub if not present locally
+- Containers restart automatically on system reboot (unless stopped)
+- All data is stored in your MongoDB instance (no persistent volumes needed)
+- Environment variables are loaded from `.env` file
+
+## 🆘 Support
+
+If you encounter any issues:
+
+1. Check the logs: `docker-compose logs`
+2. Verify all environment variables are set correctly
+3. Ensure Docker Desktop is running
+4. Check Docker Hub images are accessible

@@ -413,7 +413,7 @@ Tags: ${tags.join(', ')}
     }
 
     if (content.processingStatus === 'processing') {
-      throw new Error(' Tweetis already being processed');
+      throw new Error(' Tweet is already being processed');
     }
 
     // For tweets, we'll try a more aggressive reprocessing approach

@@ -1,30 +1,21 @@
-FROM node:22-alpine AS builder
+FROM node:20-alpine
 
+RUN addgroup app && adduser -S -G app app
 WORKDIR /app
 
+# Copy package files and install dependencies as root
 COPY package*.json ./
+RUN npm install
 
-RUN npm ci
-
+# Copy the rest of the application
 COPY . .
 
-RUN npm run build
+# Change ownership of everything to the app user
+RUN chown -R app:app /app
 
-# Production stage - use Vite preview
-FROM node:22-alpine
-
-WORKDIR /app
-
-# Copy package files
-COPY package*.json ./
-
-# Install only production dependencies (Vite is needed for preview)
-RUN npm ci --only=production
-
-# Copy built files from builder
-COPY --from=builder /app/dist ./dist
+# Switch to the non-root user
+USER app
 
 EXPOSE 5173
 
-# Use Vite preview server
-CMD ["npx", "vite", "preview", "--host", "0.0.0.0", "--port", "5173"]
+CMD ["npm", "run", "dev"]

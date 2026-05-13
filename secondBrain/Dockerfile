@@ -1,44 +1,24 @@
-#Build Stage
-FROM node:22-alpine AS builder
+FROM node:20-alpine
 
+RUN addgroup app && adduser -S -G app app
 WORKDIR /app
 
-# Copy package files
+# Copy package files and install dependencies as root
 COPY package*.json ./
+RUN npm install
 
-# install all the dependencies
-RUN npm ci
+# Copy the rest of the application
+COPY . .
 
-# Copy typscript source code
-COPY tsconfig.json ./
-COPY src ./src
-
-# Build the typescript to javascript
+# Build the application (generates the dist folder)
 RUN npm run build
 
-# Production Stage
-FROM node:22-alpine AS production
+# Change ownership of everything to the app user
+RUN chown -R app:app /app
 
-WORKDIR /app
+# Switch to the non-root user for security
+USER app
 
-# Copy package files
-COPY package*.json ./
-
-# Install only production dependencies
-RUN npm ci --only=production
-
-# Copy built files from builder
-COPY --from=builder /app/dist ./dist
-
-COPY procfile ./
-
-ENV NODE_ENV=production
-
-# Expose port
 EXPOSE 3000
-# Health check (optional but good practice)
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/api/v1/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
-# Start the application
-CMD [ "npm", "start"]
+CMD ["npm", "start"]

@@ -127,7 +127,7 @@ export class AuthService {
 
     // Update password
     user.password = hashedPassword;
-    await user.save();
+    await user.save(); 
 
     return { success: true };
   }

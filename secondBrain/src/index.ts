@@ -13,7 +13,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import { router } from "./Routes/BrainlyRouter";
 import { errorHandlerMiddleware } from "./utils/errorHandler";
-import job from "./cron";
+
 
 dotenv.config();
 
@@ -81,11 +81,6 @@ app.use((req: Request, res: Response) => {
 // Global error handler (must be last)
 app.use(errorHandlerMiddleware);
 
-// Start cron job in production
-if (process.env.NODE_ENV === "production") {
-  job.start();
-  console.log("Cron job started");
-}
 
 // Start server
 app.listen(port, () => {

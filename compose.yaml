@@ -6,37 +6,44 @@ services:
       dockerfile: Dockerfile
     container_name: secondbrain-backend
 
-    ports: 
+    ports:
       - "3000:3000"
-    
-    environment:
-        - NODE_ENV=development
-        - PORT=3000
-        - MONGODBURI=${MONGODBURI}
-        - FRONTEND_URL=${FRONTEND_URL:-http://localhost:5173}
-        - USER_JWT_SECRET=${USER_JWT_SECRET}
-        - OPENAI_API_KEY=${OPENAI_API_KEY}
-        - PINECONE_API_KEY=${PINECONE_API_KEY}
-    
-    develop:
-        watch:
-          - path: ./secondBrain/package.json
-            action: rebuild
-          - path: ./secondBrain/package-lock.json
-            action: rebuild
-          - path: ./secondBrain
-            target: /app
-            action: sync
 
-    networks: 
-        - secondbrain-network
-    
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - MONGODBURI=${MONGODBURI}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:5173}
+      - USER_JWT_SECRET=${USER_JWT_SECRET}
+      - RANDOM_STRING=${RANDOM_STRING}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - PINECONE_API_KEY=${PINECONE_API_KEY}
+      - PINECONE_INDEX_NAME=${PINECONE_INDEX_NAME}
+      - PINECONE_ENVIRONMENT=${PINECONE_ENVIRONMENT}
+      - X_API_BEARER_TOKEN=${X_API_BEARER_TOKEN}
+      - APIFY_API_TOKEN=${APIFY_API_TOKEN}
+      - APIFY_WEBHOOK_SECRET=${APIFY_WEBHOOK_SECRET}
+      - YOUTUBE_API_KEY=${YOUTUBE_API_KEY}
+      - YOUTUBE_REQUEST_DELAY=${YOUTUBE_REQUEST_DELAY}
+
+    develop:
+      watch:
+        - path: ./secondBrain/package.json
+          action: rebuild
+        - path: ./secondBrain/package-lock.json
+          action: rebuild
+        - path: ./secondBrain
+          target: /app
+          action: sync
+
+    networks:
+      - secondbrain-network
+
     healthcheck:
-        test: ["CMD", "curl", "-f", "http://localhost:3000/api/v1/health"]
-        interval: 30s
-        timeout: 10s
-        retries: 3
-    
+      test: [ "CMD", "curl", "-f", "http://localhost:3000/api/v1/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   frontend:
 
@@ -51,7 +58,7 @@ services:
     environment:
       - VITE_BACKEND_URL=${VITE_BACKEND_URL:-http://localhost:3000}
       - VITE_FRONTEND_URL=${VITE_FRONTEND_URL:-http://localhost:5173}
-    
+
     develop:
       watch:
         - path: ./secondBrainFrontend/package.json
@@ -61,15 +68,13 @@ services:
         - path: ./secondBrainFrontend
           target: /app
           action: sync
-      
+
     depends_on:
       - backend
-    
+
     networks:
       - secondbrain-network
-
 
 networks:
   secondbrain-network:
     driver: bridge
-    

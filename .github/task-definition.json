@@ -54,6 +54,10 @@
           "valueFrom": "arn:aws:ssm:us-east-1:554448409975:parameter/brainly/prod/PINECONE_INDEX_NAME"
         },
         {
+          "name": "RANDOM_STRING",
+          "valueFrom": "arn:aws:ssm:us-east-1:554448409975:parameter/brainly/prod/RANDOM_STRING"
+        },
+        {
           "name": "USER_JWT_SECRET",
           "valueFrom": "arn:aws:ssm:us-east-1:554448409975:parameter/brainly/prod/USER_JWT_SECRET"
         },

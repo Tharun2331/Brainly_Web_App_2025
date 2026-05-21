@@ -8,11 +8,9 @@ permissions:
   contents: read
 
 jobs:
-  build-and-push:
-    name: Build & Push to ECR
+  build-and-deploy:
+    name: Build, Push & Deploy
     runs-on: ubuntu-24.04
-    outputs:
-      image: ${{ steps.push.outputs.image }}
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.2
@@ -29,36 +27,23 @@ jobs:
         id: ecr-login
         uses: aws-actions/amazon-ecr-login@fa648b43de3d4d023bcb3f89ed6940096949c419 #v2.1.5
 
-      - name: Build, tag & push image
+      - name: Build, tag & push image to ECR
         id: push
         env:
           REGISTRY: ${{ steps.ecr-login.outputs.registry }}
           REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
+          IMAGE_URI="$REGISTRY/$REPOSITORY:$IMAGE_TAG"
+          echo "Building $IMAGE_URI"
           docker build \
-            -t $REGISTRY/$REPOSITORY:$IMAGE_TAG \
-            -t $REGISTRY/$REPOSITORY:latest \
+            -t "$IMAGE_URI" \
+            -t "$REGISTRY/$REPOSITORY:latest" \
             ./secondBrain
-          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
-          docker push $REGISTRY/$REPOSITORY:latest
-          echo "image=$REGISTRY/$REPOSITORY:$IMAGE_TAG" >> "$GITHUB_OUTPUT"
-
-  deploy:
-    name: Deploy to ECS
-    needs: build-and-push
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.2
-        with:
-          persist-credentials: false
-
-      - name: Configure AWS credentials (OIDC)
-        uses: aws-actions/configure-aws-credentials@d979d5b3a71173a29b74b5b88418bfda9437d885 #v6.0
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          docker push "$IMAGE_URI"
+          docker push "$REGISTRY/$REPOSITORY:latest"
+          echo "image=$IMAGE_URI" >> "$GITHUB_OUTPUT"
+          echo "Pushed: $IMAGE_URI"
 
       - name: Render task definition with new image
         id: task-def
@@ -66,7 +51,7 @@ jobs:
         with:
           task-definition: .github/task-definition.json
           container-name: brainly-backend
-          image: ${{ needs.build-and-push.outputs.image }}
+          image: ${{ steps.push.outputs.image }}
 
       - name: Register task definition & update service
         uses: aws-actions/amazon-ecs-deploy-task-definition@a310a830f5c14e583e35d84e4e1ec7dd177c3c9c #v2.6.2

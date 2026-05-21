@@ -8,6 +8,14 @@ export interface Tag {
   tag: string;
 }
 
+export interface ContentMetadata {
+  wordCount?: number;
+  extractionMethod?: string;
+  author?: string;
+  extractedAt?: string;
+  [key: string]: unknown;
+}
+
 export interface Content {
   _id: string;
   type: "twitter" | "youtube" | "article" | "note";
@@ -18,7 +26,7 @@ export interface Content {
   userId?: string;
   processingStatus?: 'pending' | 'processing' | 'completed' | 'failed';
   processingError?: string;
-  contentMetadata?: any;
+  contentMetadata?: ContentMetadata;
 }
 
 export interface AuthState {

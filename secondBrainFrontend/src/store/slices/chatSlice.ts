@@ -1,14 +1,14 @@
 // src/store/slices/chatSlice.ts
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
-interface Source {
+export interface Source {
   id: string;
   title: string;
   type: string;
   link?: string;
   score: number;
   excerpt: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 interface Message {

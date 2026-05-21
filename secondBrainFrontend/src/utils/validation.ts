@@ -63,7 +63,7 @@ export function useValidation<T extends z.ZodSchema>(schema: T) {
   );
 
   const validateField = useCallback(
-    (fieldName: string, _value: any, fullData: any) => {
+    (fieldName: string, _value: unknown, fullData: unknown) => {
       setTouched((prev) => new Set(prev).add(fieldName));
       
       // Validate the entire form to get all errors
@@ -146,11 +146,17 @@ export interface ParsedError {
   code?: string;
 }
 
-export function parseApiError(error: any): ParsedError {
+export function parseApiError(error: unknown): ParsedError {
+  const err = error as {
+    response?: { data?: { success?: boolean; message?: string; errors?: ValidationErrors; code?: string } };
+    code?: string;
+    message?: string;
+  };
+
   // Handle Axios error response
-  if (error.response?.data) {
-    const data = error.response.data;
-    
+  if (err.response?.data) {
+    const data = err.response.data;
+
     if (data.success === false) {
       return {
         message: data.message || "An error occurred",
@@ -159,18 +165,18 @@ export function parseApiError(error: any): ParsedError {
       };
     }
   }
-  
+
   // Handle network errors
-  if (error.code === "ERR_NETWORK") {
+  if (err.code === "ERR_NETWORK") {
     return {
       message: "Network error. Please check your connection.",
       code: "NETWORK_ERROR",
     };
   }
-  
+
   // Default error
   return {
-    message: error.message || "An unexpected error occurred",
+    message: err.message || "An unexpected error occurred",
     code: "UNKNOWN_ERROR",
   };
 }

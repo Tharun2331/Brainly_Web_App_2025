@@ -1,0 +1,28 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.17.2/.schema/devbox.schema.json",
+  "packages": [
+    "act@latest"
+  ],
+  "shell": {
+    "init_hook": [
+      "echo 'Run `devbox run ci` to test CI locally with act.'"
+    ],
+    "scripts": {
+      "ci": [
+        "act workflow_call -W .github/workflows/ci.yml --pull=false"
+      ],
+      "ci-backend": [
+        "act workflow_call -W .github/workflows/ci.yml --pull=false -j backend-ci"
+      ],
+      "ci-frontend": [
+        "act workflow_call -W .github/workflows/ci.yml --pull=false -j frontend-ci"
+      ],
+      "pipeline-dry": [
+        "act push -W .github/workflows/pipeline.yml --dry-run"
+      ],
+      "test": [
+        "echo \"Use 'devbox run ci' to run CI locally\" && exit 0"
+      ]
+    }
+  }
+}

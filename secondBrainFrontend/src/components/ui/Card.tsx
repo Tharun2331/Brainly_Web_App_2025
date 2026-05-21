@@ -61,7 +61,7 @@ export const Card = ({
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (contentId) {
-      onDelete && onDelete(contentId);
+      onDelete?.(contentId);
     } else {
       console.error("No contentId provided for deletion");
       toast.error("No content ID provided for deletion", {
@@ -89,11 +89,9 @@ export const Card = ({
       if (!tweetRef.current || tweetRenderedRef.current) return;
       
       try {
-        // @ts-ignore
         if (!window.twttr) {
           if (document.querySelector('script[src="https://platform.twitter.com/widgets.js"]')) {
             const checkScript = setInterval(() => {
-              // @ts-ignore
               if (window.twttr) {
                 clearInterval(checkScript);
                 setTweetLoaded(true);
@@ -124,14 +122,14 @@ export const Card = ({
 
     const renderTweet = () => {
       setTimeout(() => {
-        // @ts-ignore
         if (window.twttr && tweetRef.current && !tweetRenderedRef.current) {
           tweetRenderedRef.current = true;
-          // @ts-ignore
+          const tweetId = link?.split("/status/")[1];
+          if (!tweetId) return;
           window.twttr.widgets
-            .createTweet(link?.split("/status/")[1], tweetRef.current, { align: "center" })
+            .createTweet(tweetId, tweetRef.current, { align: "center" })
             .then(() => console.log("Tweet rendered"))
-            .catch((error: any) => {
+            .catch((error: unknown) => {
               console.error("Tweet creation failed:", error);
               setEmbedError(true);
             });

@@ -151,7 +151,7 @@ export function Dashboard() {
           }
         );
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to generate share link. Please try again.", {
         position: "top-right",
         autoClose: 5000,
@@ -177,12 +177,13 @@ export function Dashboard() {
     dispatch(toggleSidebar());
   };
 
-  const extractTagStrings = (tags: any): string[] => {
+  type TagLike = string | { tag?: string };
+  const extractTagStrings = (tags: unknown): string[] => {
     if (!tags || !Array.isArray(tags)) return [];
-    
-    return tags.map((tag: any) => {
+
+    return (tags as TagLike[]).map((tag) => {
       if (typeof tag === 'string') return tag;
-      if (tag && typeof tag === 'object' && 'tag' in tag) return tag.tag;
+      if (tag && typeof tag === 'object' && 'tag' in tag) return tag.tag ?? '';
       return '';
     }).filter(Boolean);
   };

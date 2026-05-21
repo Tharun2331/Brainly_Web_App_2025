@@ -9,13 +9,14 @@ import { createContent, updateContent, fetchContents } from "../../store/slices/
 import { toast } from "react-toastify";
 import { Twitter, Youtube, FileText, StickyNote, X } from "lucide-react";
 
-// @ts-ignore
-enum ContentType {
-  Youtube = "youtube",
-  Twitter = "twitter",
-  Article = "article",
-  Note = "note",
-}
+const ContentType = {
+  Youtube: "youtube",
+  Twitter: "twitter",
+  Article: "article",
+  Note: "note",
+} as const;
+
+type ContentType = typeof ContentType[keyof typeof ContentType];
 
 export function CreateContentModal({
    open,
@@ -41,7 +42,7 @@ export function CreateContentModal({
   const noteTagRef = useRef<HTMLInputElement | null>(null);
   const noteTitleRef = useRef<HTMLInputElement | null>(null);
   
-  const [type, setType] = useState(ContentType.Youtube);
+  const [type, setType] = useState<ContentType>(ContentType.Youtube);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -128,7 +129,13 @@ export function CreateContentModal({
       setError(null);
 
       // Prepare content data
-      const contentData: any = {
+      const contentData: {
+        description: string;
+        type: ContentType;
+        tags: string[];
+        title?: string;
+        link?: string;
+      } = {
         description,
         type,
         tags, // Pass tag names, Redux will handle converting to IDs
@@ -171,10 +178,11 @@ export function CreateContentModal({
       
       // Close modal
       onClose();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error with content operation:", error);
-      setError(error.message || "An unexpected error occurred");
-      toast.error(error.message || "Failed to save content", {
+      const message = error instanceof Error ? error.message : "An unexpected error occurred";
+      setError(message);
+      toast.error(message, {
         position: "top-right",
         autoClose: 3000,
       });

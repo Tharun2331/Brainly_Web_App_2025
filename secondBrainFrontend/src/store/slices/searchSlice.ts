@@ -51,12 +51,12 @@ export const performSemanticSearch = createAsyncThunk(
     contentType?: string[];
     tags?: string[];
   }) => {
-    const params: any = { query, limit };
-    
+    const params: Record<string, string | number> = { query, limit };
+
     if (contentType && contentType.length > 0) {
       params.contentType = contentType.join(',');
     }
-    
+
     if (tags && tags.length > 0) {
       params.tags = tags.join(',');
     }

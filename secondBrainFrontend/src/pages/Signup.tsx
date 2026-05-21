@@ -96,7 +96,7 @@ export function Signup() {
         navigate("/signin");
       }, 2000);
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       const parsedError = parseApiError(error);
       
       // Show field-specific errors

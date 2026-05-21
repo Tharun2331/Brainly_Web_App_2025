@@ -1,0 +1,87 @@
+name: Pipeline
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+  workflow_dispatch:
+    inputs:
+      force_backend:
+        description: Force backend deploy (skip path detection)
+        type: boolean
+        default: false
+      force_frontend:
+        description: Force frontend deploy (skip path detection)
+        type: boolean
+        default: false
+concurrency:
+    group: pipeline-${{ github.ref }}
+    cancel-in-progress: true
+permissions:
+  id-token: write   # required for OIDC token minting in called deploy workflows
+  contents: read
+
+
+jobs:
+  # ── 1. Detect which parts of the repo changed ──────────────────────────────
+  detect-changes:
+    name: Detect Changed Paths
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.2
+        with:
+          # Full history needed so paths-filter can diff against the base ref
+          fetch-depth: 0
+
+      - name: Filter changed paths
+        uses: dorny/paths-filter@d1c1ffe0248fe513906c8e24db8ea791d46f8590 #v3.0.3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'secondBrain/**'
+              - '.github/workflows/deploy-backend.yml'
+              - '.github/task-definition.json'
+            frontend:
+              - 'secondBrainFrontend/**'
+              - '.github/workflows/deploy-frontend.yml'
+
+  # ── 2. CI — always runs (blocks deploys on failure) ────────────────────────
+  ci:
+    name: CI
+    needs: detect-changes
+    uses: ./.github/workflows/ci.yml
+    secrets:
+      VITE_BACKEND_URL: ${{ secrets.VITE_BACKEND_URL }}
+
+  # ── 3. Backend deploy — push/dispatch only, after CI passes ────────────────
+  deploy-backend:
+    name: Deploy Backend
+    needs: [ci, detect-changes]
+    # Skip on PRs; deploy when backend files changed OR force flag set
+    if: |
+      github.event_name != 'pull_request' &&
+      needs.ci.result == 'success' && (
+        needs.detect-changes.outputs.backend == 'true' ||
+        github.event.inputs.force_backend == 'true'
+      )
+    uses: ./.github/workflows/deploy-backend.yml
+    secrets: inherit
+
+  # ── 4. Frontend deploy — push/dispatch only, after CI passes ───────────────
+  deploy-frontend:
+    name: Deploy Frontend
+    needs: [ci, detect-changes]
+    # Skip on PRs; deploy when frontend files changed OR force flag set
+    if: |
+      github.event_name != 'pull_request' &&
+      needs.ci.result == 'success' && (
+        needs.detect-changes.outputs.frontend == 'true' ||
+        github.event.inputs.force_frontend == 'true'
+      )
+    uses: ./.github/workflows/deploy-frontend.yml
+    secrets: inherit

@@ -98,7 +98,7 @@ export function Signin() {
       
       // Navigation will happen automatically due to isAuthenticated useEffect
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       const parsedError = parseApiError(error);
       
       // Handle specific error codes

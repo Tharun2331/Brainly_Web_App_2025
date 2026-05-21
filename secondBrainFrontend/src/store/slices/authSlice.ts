@@ -25,16 +25,17 @@ export const signupUser = createAsyncThunk<
         password,
       });
       return response.data.data || response.data;
-    } catch (error: any) {
-      if (error.response?.data) {
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.data) {
         return rejectWithValue({
           message: error.response.data.message || "Signup failed",
           fieldErrors: error.response.data.errors,
           code: error.response.data.code,
         });
       }
+      const message = error instanceof Error ? error.message : "Network error occurred";
       return rejectWithValue({
-        message: error.message || "Network error occurred",
+        message,
         code: "NETWORK_ERROR",
       });
     }
@@ -65,16 +66,17 @@ export const signinUser = createAsyncThunk<
       }
       
       return { token: finalToken, username: finalUsername };
-    } catch (error: any) {
-      if (error.response?.data) {
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.data) {
         return rejectWithValue({
           message: error.response.data.message || "Sign in failed",
           fieldErrors: error.response.data.errors,
           code: error.response.data.code,
         });
       }
+      const message = error instanceof Error ? error.message : "Network error occurred";
       return rejectWithValue({
-        message: error.message || "Network error occurred",
+        message,
         code: "NETWORK_ERROR",
       });
     }
@@ -95,7 +97,7 @@ export const verifyToken = createAsyncThunk<
         headers: { Authorization: token }
       });
       return { valid: true, username: response.data.username };
-    } catch (error) {
+    } catch {
       localStorage.removeItem('token');
       return rejectWithValue({
         message: "Session expired",

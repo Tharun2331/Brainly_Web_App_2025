@@ -1,0 +1,76 @@
+{
+  "family": "brainly-backend-task",
+  "taskRoleArn": "arn:aws:iam::554448409975:role/brainly-ecs-task-role",
+  "executionRoleArn": "arn:aws:iam::554448409975:role/brainly-ecs-execution-role",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "runtimePlatform": {
+    "cpuArchitecture": "X86_64",
+    "operatingSystemFamily": "LINUX"
+  },
+  "containerDefinitions": [
+    {
+      "name": "brainly-backend",
+      "image": "554448409975.dkr.ecr.us-east-1.amazonaws.com/brainly-backend:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 3000,
+          "hostPort": 3000,
+          "protocol": "tcp",
+          "name": "brainly-backend-3000-tcp",
+          "appProtocol": "http"
+        }
+      ],
+      "environment": [
+        { "name": "PORT", "value": "3000" },
+        { "name": "NODE_ENV", "value": "production" }
+      ],
+      "secrets": [
+        {
+          "name": "APIFY_API_TOKEN",
+          "valueFrom": "arn:aws:ssm:us-east-1:554448409975:parameter/brainly/prod/APIFY_API_TOKEN"
+        },
+        {
+          "name": "FRONTEND_URL",
+          "valueFrom": "arn:aws:ssm:us-east-1:554448409975:parameter/brainly/prod/FRONTEND_URL"
+        },
+        {
+          "name": "MONGODBURI",
+          "valueFrom": "arn:aws:ssm:us-east-1:554448409975:parameter/brainly/prod/MONGODBURI"
+        },
+        {
+          "name": "OPENAI_API_KEY",
+          "valueFrom": "arn:aws:ssm:us-east-1:554448409975:parameter/brainly/prod/OPENAI_API_KEY"
+        },
+        {
+          "name": "PINECONE_API_KEY",
+          "valueFrom": "arn:aws:ssm:us-east-1:554448409975:parameter/brainly/prod/PINECONE_API_KEY"
+        },
+        {
+          "name": "PINECONE_INDEX_NAME",
+          "valueFrom": "arn:aws:ssm:us-east-1:554448409975:parameter/brainly/prod/PINECONE_INDEX_NAME"
+        },
+        {
+          "name": "USER_JWT_SECRET",
+          "valueFrom": "arn:aws:ssm:us-east-1:554448409975:parameter/brainly/prod/USER_JWT_SECRET"
+        },
+        {
+          "name": "YOUTUBE_API_KEY",
+          "valueFrom": "arn:aws:ssm:us-east-1:554448409975:parameter/brainly/prod/YOUTUBE_API_KEY"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/brainly-backend-task",
+          "awslogs-create-group": "true",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}

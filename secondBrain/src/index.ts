@@ -59,10 +59,10 @@ app.get("/api/v1/verify", (req: Request, res: Response, next: NextFunction) => {
     
     // Verify token (you'll need to import jwt and USER_JWT_SECRET)
     // This is just a placeholder - implement proper verification
-    res.status(200).json({
-      success: true,
-      message: "Token is valid",
-      data: { username: "user" }, // Get from decoded token
+     return res.status(501).json({
+      success: false,
+      message: "Token verification is not implemented",
+      code: "NOT_IMPLEMENTED",
     });
   } catch (error) {
     next(error);

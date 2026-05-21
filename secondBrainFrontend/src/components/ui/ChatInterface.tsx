@@ -1,14 +1,15 @@
 // src/components/ui/ChatInterface.tsx
 import { useState, useRef, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
-import { 
-  addUserMessage, 
-  startStreaming, 
-  appendStreamToken, 
+import {
+  addUserMessage,
+  startStreaming,
+  appendStreamToken,
   finishStreaming,
   setError,
   clearChat,
-  closeChat
+  closeChat,
+  type Source
 } from '../../store/slices/chatSlice';
 import { 
   Send, 
@@ -126,7 +127,7 @@ export function ChatInterface() {
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
-      let sources: any[] = [];
+      let sources: Source[] = [];
 
       while (true) {
         const { done, value } = await reader.read();
@@ -156,10 +157,11 @@ export function ChatInterface() {
           }
         }
       }
-    } catch (error: any) {
-      if (error.name !== 'AbortError') {
+    } catch (error: unknown) {
+      const err = error as { name?: string; message?: string };
+      if (err.name !== 'AbortError') {
         console.error('Chat error:', error);
-        dispatch(setError(error.message || 'Failed to send message'));
+        dispatch(setError(err.message || 'Failed to send message'));
       }
     }
   };

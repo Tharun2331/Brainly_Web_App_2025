@@ -4,6 +4,14 @@ import {type ContentState, type Content} from "../types/index";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
+interface ContentInput {
+  description: string;
+  type: string;
+  tags: string[];
+  title?: string;
+  link?: string;
+}
+
 
 // Async Thunks
 export const fetchContents = createAsyncThunk(
@@ -40,7 +48,7 @@ export const createContent = createAsyncThunk(
     contentData, 
     token 
   }: { 
-    contentData: any; 
+    contentData: ContentInput;
     token: string; 
   }) => {
     // Create tags first
@@ -75,7 +83,7 @@ export const updateContent = createAsyncThunk(
     token 
   }: { 
     id: string; 
-    contentData: any; 
+    contentData: ContentInput;
     token: string; 
   }) => {
     const tagRes = await axios.post(

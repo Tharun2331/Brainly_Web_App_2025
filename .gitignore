@@ -1,2 +1,15 @@
 .env
+.env.local
+.env.production
+
+# act local secrets (never commit real credentials)
 node_modules/
+
+# TypeScript incremental build cache
+**/*.tsbuildinfo
+
+# OS & editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/settings.json

@@ -51,7 +51,6 @@ export const Card = ({
   const [, setTweetLoaded] = useState(false);
   const [embedError, setEmbedError] = useState(false);
   const tweetRenderedRef = useRef(false);
-
   const safeDescription = description || "";
   const truncatedDescription =
     safeDescription.length > 100 

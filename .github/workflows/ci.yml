@@ -2,6 +2,11 @@ name: CI
 
 on:
   workflow_call:
+    secrets:
+      VITE_BACKEND_URL:
+        required: false
+        description: Backend API URL injected into the Vite build
+
 permissions:
   contents: read
 

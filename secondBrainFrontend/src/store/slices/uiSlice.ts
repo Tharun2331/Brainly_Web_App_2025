@@ -3,7 +3,6 @@ import { type UIState } from '../types/index';
 import axios from "axios";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
-const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL || "http://localhost:5173";
 
 
 const getInitialDarkMode = (): boolean => {
@@ -45,8 +44,7 @@ export const generateShareLink = createAsyncThunk(
     );
     const hash = response.data.data.hash || "";
 
-    const baseUrl = FRONTEND_URL.endsWith("/") ? FRONTEND_URL.slice(0,-1) : FRONTEND_URL;
-    const shareLink = `${baseUrl}/share/${hash}`;
+    const shareLink = `${window.location.origin}/share/${hash}`;
     
     return shareLink;
   }
